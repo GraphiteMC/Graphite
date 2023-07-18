@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrFishCakes <FinlayOxby@outlook.com>
+Date: Tue, 18 Jul 2023 15:04:12 +0100
+Subject: [PATCH] Graphite Configuration
+
+
+diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
+index 916b9a9f05c0e83109bc9a4eb1692e2ed6e81eaf..77a48428fde7fa3f26ef05167e98087aa0378299 100644
+--- a/src/main/java/org/bukkit/Server.java
++++ b/src/main/java/org/bukkit/Server.java
+@@ -2041,7 +2041,12 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
+             throw new UnsupportedOperationException("Not supported yet.");
+         }
+         // Purpur end
+-
++        // Graphite start
++        @NotNull
++        public org.bukkit.configuration.file.YamlConfiguration getGraphiteConfig() {
++            throw new UnsupportedOperationException("Not supported yet.");
++        }
++        // Graphite end
+         /**
+          * Sends the component to the player
+          *
