@@ -63,7 +63,7 @@ dependencies {
 }
 
 paperweight {
-    serverProject.set(project(":tentacles-server"))
+    serverProject.set(project(":graphite-server"))
 
     remapRepo.set(paperMavenPublicUrl)
     decompileRepo.set(paperMavenPublicUrl)
@@ -76,16 +76,16 @@ paperweight {
             baseName("Purpur")
 
             apiPatchDir.set(layout.projectDirectory.dir("patches/api"))
-            apiOutputDir.set(layout.projectDirectory.dir("Tentacles-API"))
+            apiOutputDir.set(layout.projectDirectory.dir("Graphite-API"))
 
             serverPatchDir.set(layout.projectDirectory.dir("patches/server"))
-            serverOutputDir.set(layout.projectDirectory.dir("Tentacles-Server"))
+            serverOutputDir.set(layout.projectDirectory.dir("Graphite-Server"))
         }
     }
 }
 
 tasks.generateDevelopmentBundle {
-    apiCoordinates.set("org.purpurmc.tentacles:tentacles-api")
+    apiCoordinates.set("dev.graphitemc.graphite:graphite-api")
     mojangApiCoordinates.set("io.papermc.paper:paper-mojangapi")
     libraryRepositories.set(
         listOf(
@@ -100,7 +100,7 @@ allprojects {
     publishing {
         repositories {
             maven("https://repo.purpurmc.org/snapshots") {
-                name = "tentacles"
+                name = "graphite"
                 credentials(PasswordCredentials::class)
             }
         }
