@@ -6,7 +6,7 @@ Subject: [PATCH] Graphite Configuration
 
 diff --git a/src/main/java/dev/graphitemc/graphite/GraphiteConfig.java b/src/main/java/dev/graphitemc/graphite/GraphiteConfig.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..29033c982a0abe60e6591d7e828f45872975e271
+index 0000000000000000000000000000000000000000..daa9ad052a9c10697f4e60778fa640b017b3d446
 --- /dev/null
 +++ b/src/main/java/dev/graphitemc/graphite/GraphiteConfig.java
 @@ -0,0 +1,152 @@
@@ -59,7 +59,7 @@ index 0000000000000000000000000000000000000000..29033c982a0abe60e6591d7e828f4587
 +
 +        config.options().header(HEADER);
 +        config.options().copyDefaults(true);
-+        verbose = getBoolean("verbose", true);
++        verbose = getBoolean("verbose", false);
 +
 +        commands = new HashMap<>();
 +        commands.put("graphite", new GraphiteCommand("graphite"));
@@ -164,16 +164,14 @@ index 0000000000000000000000000000000000000000..29033c982a0abe60e6591d7e828f4587
 +}
 diff --git a/src/main/java/dev/graphitemc/graphite/GraphiteWorldConfig.java b/src/main/java/dev/graphitemc/graphite/GraphiteWorldConfig.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..b10f78dee71b6ad4a6c8d8d050d6c9a3d4ec09ff
+index 0000000000000000000000000000000000000000..732abfcef720327b9d1cd31d75c333daebe66b1e
 --- /dev/null
 +++ b/src/main/java/dev/graphitemc/graphite/GraphiteWorldConfig.java
-@@ -0,0 +1,77 @@
+@@ -0,0 +1,75 @@
 +package dev.graphitemc.graphite;
 +
 +import org.bukkit.World;
 +import org.bukkit.configuration.ConfigurationSection;
-+import org.purpurmc.purpur.PurpurConfig;
-+import org.purpurmc.purpur.PurpurWorldConfig;
 +
 +import java.util.List;
 +import java.util.Map;
@@ -194,7 +192,7 @@ index 0000000000000000000000000000000000000000..b10f78dee71b6ad4a6c8d8d050d6c9a3
 +
 +    public void init() {
 +        log("-------- World Settings For [" + worldName + "] --------");
-+        GraphiteConfig.readConfig(PurpurWorldConfig.class, this);
++        GraphiteConfig.readConfig(GraphiteWorldConfig.class, this);
 +    }
 +
 +    private void set(String path, Object val) {

@@ -1,0 +1,144 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrFishCakes <FinlayOxby@outlook.com>
+Date: Tue, 18 Jul 2023 18:56:10 +0100
+Subject: [PATCH] Allow custom raw ore block smelting recipes
+
+This patch allows for custom furnace and blasting recipes for raw ore blocks. They can be smelted in a 1:X ratio, cook time and experience can be customised for each different recipe
+
+diff --git a/src/main/java/dev/graphitemc/graphite/GraphiteConfig.java b/src/main/java/dev/graphitemc/graphite/GraphiteConfig.java
+index daa9ad052a9c10697f4e60778fa640b017b3d446..d43ca71f5e6dcdac25a462e5a212e9b339304af9 100644
+--- a/src/main/java/dev/graphitemc/graphite/GraphiteConfig.java
++++ b/src/main/java/dev/graphitemc/graphite/GraphiteConfig.java
+@@ -6,19 +6,22 @@ import dev.graphitemc.graphite.command.GraphiteCommand;
+ import net.minecraft.server.MinecraftServer;
+ import net.minecraft.world.level.block.Blocks;
+ import org.bukkit.Bukkit;
++import org.bukkit.Material;
++import org.bukkit.NamespacedKey;
+ import org.bukkit.command.Command;
+ import org.bukkit.configuration.ConfigurationSection;
+ import org.bukkit.configuration.InvalidConfigurationException;
+ import org.bukkit.configuration.file.YamlConfiguration;
++import org.bukkit.inventory.BlastingRecipe;
++import org.bukkit.inventory.FurnaceRecipe;
++import org.bukkit.inventory.ItemStack;
+ 
+ import java.io.File;
+ import java.io.IOException;
+ import java.lang.reflect.InvocationTargetException;
+ import java.lang.reflect.Method;
+ import java.lang.reflect.Modifier;
+-import java.util.HashMap;
+-import java.util.List;
+-import java.util.Map;
++import java.util.*;
+ import java.util.logging.Level;
+ 
+ public class GraphiteConfig {
+@@ -149,4 +152,106 @@ public class GraphiteConfig {
+         return builder.build();
+     }
+ 
++    private static void smeltRawCopperBlocks() {
++        ConfigurationSection rawCopperBlockSection = config.getConfigurationSection("recipes.raw-ore-smelting.raw-copper-block");
++        if (rawCopperBlockSection == null) {
++            set("recipes.raw-ore-smelting.raw-copper-block.furnace.enabled", true);
++            set("recipes.raw-ore-smelting.raw-copper-block.furnace.experience", 9.0D);
++            set("recipes.raw-ore-smelting.raw-copper-block.furnace.cook-time", 1800);
++
++            set("recipes.raw-ore-smelting.raw-copper-block.blasting.enabled", true);
++            set("recipes.raw-ore-smelting.raw-copper-block.blasting.experience", 9.0D);
++            set("recipes.raw-ore-smelting.raw-copper-block.blasting.cook-time", 900);
++        }
++
++        NamespacedKey furnaceKey = new NamespacedKey(NamespacedKey.BUKKIT, "raw_copper_block_furnace");
++        NamespacedKey blastingKey = new NamespacedKey(NamespacedKey.BUKKIT, "raw_copper_block_blasting");
++
++        FurnaceRecipe furnaceRecipe = new FurnaceRecipe(furnaceKey, new ItemStack(Material.COPPER_BLOCK), Material.RAW_COPPER_BLOCK,
++                (float) getDouble("recipes.raw-ore-smelting.raw-copper-block.furnace.experience", 6.3D),
++                getInt("recipes.raw-ore-smelting.raw-copper-block.furnace.cook-time", 1800));
++
++        BlastingRecipe blastingRecipe = new BlastingRecipe(blastingKey, new ItemStack(Material.COPPER_BLOCK), Material.RAW_COPPER_BLOCK,
++                (float) getDouble("recipes.raw-ore-smelting.raw-copper-block.blasting.experience", 6.3D),
++                getInt("recipes.raw-ore-smelting.raw-copper-block.blasting.cook-time", 900));
++
++        if (getBoolean("recipes.raw-ore-smelting.raw-copper-block.furnace.enabled", true)) {
++            if (!Bukkit.addRecipe(furnaceRecipe))
++                Bukkit.getLogger().log(Level.SEVERE, "Unable to add " + furnaceKey + " recipe");
++        }
++
++        if (getBoolean("recipes.raw-ore-smelting.raw-copper-block.blasting.enabled", true)) {
++            if (!Bukkit.addRecipe(blastingRecipe))
++                Bukkit.getLogger().log(Level.SEVERE, "Unable to add " + blastingKey + " recipe");
++        }
++    }
++
++    private static void smeltRawGoldBlocks() {
++        ConfigurationSection rawGoldBlockSection = config.getConfigurationSection("recipes.raw-ore-smelting.raw-gold-block");
++        if (rawGoldBlockSection == null) {
++            set("recipes.raw-ore-smelting.raw-gold-block.furnace.enabled", true);
++            set("recipes.raw-ore-smelting.raw-gold-block.furnace.experience", 9.0D);
++            set("recipes.raw-ore-smelting.raw-gold-block.furnace.cook-time", 1800);
++
++            set("recipes.raw-ore-smelting.raw-gold-block.blasting.enabled", true);
++            set("recipes.raw-ore-smelting.raw-gold-block.blasting.experience", 9.0D);
++            set("recipes.raw-ore-smelting.raw-gold-block.blasting.cook-time", 900);
++        }
++
++        NamespacedKey furnaceKey = new NamespacedKey(NamespacedKey.BUKKIT, "raw_gold_block_furnace");
++        NamespacedKey blastingKey = new NamespacedKey(NamespacedKey.BUKKIT, "raw_gold_block_blasting");
++
++        FurnaceRecipe furnaceRecipe = new FurnaceRecipe(furnaceKey, new ItemStack(Material.GOLD_BLOCK), Material.RAW_GOLD_BLOCK,
++                (float) getDouble("recipes.raw-ore-smelting.raw-gold-block.furnace.experience", 9.0D),
++                getInt("recipes.raw-ore-smelting.raw-gold-block.furnace.cook-time", 1800));
++
++        BlastingRecipe blastingRecipe = new BlastingRecipe(blastingKey, new ItemStack(Material.GOLD_BLOCK), Material.RAW_GOLD_BLOCK,
++                (float) getDouble("recipes.raw-ore-smelting.raw-gold-block.blasting.experience", 9.0D),
++                getInt("recipes.raw-ore-smelting.raw-gold-block.blasting.cook-time", 900));
++
++        if (getBoolean("recipes.raw-ore-smelting.raw-gold-block.furnace.enabled", true)) {
++            if (!Bukkit.addRecipe(furnaceRecipe))
++                Bukkit.getLogger().log(Level.SEVERE, "Unable to add " + furnaceKey + " recipe");
++        }
++
++        if (getBoolean("recipes.raw-ore-smelting.raw-gold-block.blasting.enabled", true)) {
++            if (!Bukkit.addRecipe(blastingRecipe))
++                Bukkit.getLogger().log(Level.SEVERE, "Unable to add " + blastingKey + " recipe");
++        }
++    }
++
++    private static void smeltRawIronBlocks() {
++        ConfigurationSection rawIronBlockSection = config.getConfigurationSection("recipes.raw-ore-smelting.raw-iron-block");
++        if (rawIronBlockSection == null) {
++            set("recipes.raw-ore-smelting.raw-iron-block.furnace.enabled", true);
++            set("recipes.raw-ore-smelting.raw-iron-block.furnace.experience", 6.3D);
++            set("recipes.raw-ore-smelting.raw-iron-block.furnace.cook-time", 1800);
++
++            set("recipes.raw-ore-smelting.raw-iron-block.blasting.enabled", true);
++            set("recipes.raw-ore-smelting.raw-iron-block.blasting.experience", 6.3D);
++            set("recipes.raw-ore-smelting.raw-iron-block.blasting.cook-time", 900);
++        }
++
++        NamespacedKey furnaceKey = new NamespacedKey(NamespacedKey.BUKKIT, "raw_iron_block_furnace");
++        NamespacedKey blastingKey = new NamespacedKey(NamespacedKey.BUKKIT, "raw_iron_block_blasting");
++
++        FurnaceRecipe furnaceRecipe = new FurnaceRecipe(furnaceKey, new ItemStack(Material.IRON_BLOCK), Material.RAW_IRON_BLOCK,
++                (float) getDouble("recipes.raw-ore-smelting.raw-iron-block.furnace.experience", 6.3D),
++                getInt("recipes.raw-ore-smelting.raw-iron-block.furnace.cook-time", 1800));
++
++        BlastingRecipe blastingRecipe = new BlastingRecipe(blastingKey, new ItemStack(Material.IRON_BLOCK), Material.RAW_IRON_BLOCK,
++                (float) getDouble("recipes.raw-ore-smelting.raw-iron-block.blasting.experience", 6.3D),
++                getInt("recipes.raw-ore-smelting.raw-iron-block.blasting.cook-time", 900));
++
++        if (getBoolean("recipes.raw-ore-smelting.raw-iron-block.furnace.enabled", true)) {
++            if (!Bukkit.addRecipe(furnaceRecipe))
++                Bukkit.getLogger().log(Level.SEVERE, "Unable to add " + furnaceKey + " recipe");
++        }
++
++        if (getBoolean("recipes.raw-ore-smelting.raw-iron-block.blasting.enabled", true)) {
++            if (!Bukkit.addRecipe(blastingRecipe))
++                Bukkit.getLogger().log(Level.SEVERE, "Unable to add " + blastingKey + " recipe");
++        }
++    }
++
+ }
