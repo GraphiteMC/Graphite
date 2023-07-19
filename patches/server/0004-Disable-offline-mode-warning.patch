@@ -6,10 +6,10 @@ Subject: [PATCH] Disable offline mode warning
 Disable the offline mode warning printed when the server starts in offline mode
 
 diff --git a/src/main/java/dev/graphitemc/graphite/GraphiteConfig.java b/src/main/java/dev/graphitemc/graphite/GraphiteConfig.java
-index d43ca71f5e6dcdac25a462e5a212e9b339304af9..c11027cf180d4a9a4d7cc7cbe900cfb98120df75 100644
+index e1d9b62c5e0ec4a65d7305d9c8f1e23d00ec2500..e1dc8eacb47e13ee6663130bf8214154bf3e7ce4 100644
 --- a/src/main/java/dev/graphitemc/graphite/GraphiteConfig.java
 +++ b/src/main/java/dev/graphitemc/graphite/GraphiteConfig.java
-@@ -254,4 +254,10 @@ public class GraphiteConfig {
+@@ -253,4 +253,10 @@ public class GraphiteConfig {
          }
      }
  

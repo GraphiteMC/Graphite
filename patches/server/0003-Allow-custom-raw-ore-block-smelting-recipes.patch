@@ -6,7 +6,7 @@ Subject: [PATCH] Allow custom raw ore block smelting recipes
 This patch allows for custom furnace and blasting recipes for raw ore blocks. They can be smelted in a 1:X ratio, cook time and experience can be customised for each different recipe
 
 diff --git a/src/main/java/dev/graphitemc/graphite/GraphiteConfig.java b/src/main/java/dev/graphitemc/graphite/GraphiteConfig.java
-index daa9ad052a9c10697f4e60778fa640b017b3d446..d43ca71f5e6dcdac25a462e5a212e9b339304af9 100644
+index 86069800d2cf0192856f9994f1fa1b97d4f3c12f..e1d9b62c5e0ec4a65d7305d9c8f1e23d00ec2500 100644
 --- a/src/main/java/dev/graphitemc/graphite/GraphiteConfig.java
 +++ b/src/main/java/dev/graphitemc/graphite/GraphiteConfig.java
 @@ -6,19 +6,22 @@ import dev.graphitemc.graphite.command.GraphiteCommand;
@@ -35,7 +35,7 @@ index daa9ad052a9c10697f4e60778fa640b017b3d446..d43ca71f5e6dcdac25a462e5a212e9b3
  import java.util.logging.Level;
  
  public class GraphiteConfig {
-@@ -149,4 +152,106 @@ public class GraphiteConfig {
+@@ -148,4 +151,106 @@ public class GraphiteConfig {
          return builder.build();
      }
  
