@@ -244,13 +244,15 @@ index 0000000000000000000000000000000000000000..732abfcef720327b9d1cd31d75c333da
 +}
 diff --git a/src/main/java/dev/graphitemc/graphite/command/GraphiteCommand.java b/src/main/java/dev/graphitemc/graphite/command/GraphiteCommand.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..75a80cc20e647bcd72d6b33785dcaccd9dda50bf
+index 0000000000000000000000000000000000000000..4ed06666dbadb1b3a8ced1cdbbe617ac2e4cfcd6
 --- /dev/null
 +++ b/src/main/java/dev/graphitemc/graphite/command/GraphiteCommand.java
-@@ -0,0 +1,65 @@
+@@ -0,0 +1,67 @@
 +package dev.graphitemc.graphite.command;
 +
 +import dev.graphitemc.graphite.GraphiteConfig;
++import net.kyori.adventure.text.Component;
++import net.kyori.adventure.text.format.NamedTextColor;
 +import net.minecraft.server.MinecraftServer;
 +import net.minecraft.server.level.ServerLevel;
 +import org.bukkit.Bukkit;
@@ -288,13 +290,13 @@ index 0000000000000000000000000000000000000000..75a80cc20e647bcd72d6b33785dcaccd
 +        if (!testPermission(sender)) return true;
 +
 +        if (args.length != 1) {
-+            sender.sendMessage(ChatColor.RED + "Usage: " + usageMessage);
++            sender.sendMessage(Component.text("Usage: " + usageMessage, NamedTextColor.RED));
 +            return false;
 +        }
 +
 +        if (args[0].equalsIgnoreCase("reload")) {
-+            Command.broadcastCommandMessage(sender, ChatColor.RED + "Please note that this command is not supported and may cause issues.");
-+            Command.broadcastCommandMessage(sender, ChatColor.RED + "If you encounter any issues please use the /stop command to restart your server.");
++            Command.broadcastCommandMessage(sender, Component.text("Please note that this command is not supported and may cause issues.", NamedTextColor.RED));
++            Command.broadcastCommandMessage(sender, Component.text("If you encounter any issues please use the /stop command to restart your server.", NamedTextColor.RED));
 +
 +            MinecraftServer console = MinecraftServer.getServer();
 +            GraphiteConfig.init((File) console.options.valueOf("graphite-settings"));
@@ -303,7 +305,7 @@ index 0000000000000000000000000000000000000000..75a80cc20e647bcd72d6b33785dcaccd
 +            }
 +
 +            console.server.reloadCount++;
-+            Command.broadcastCommandMessage(sender, ChatColor.GREEN + "Graphite config reload complete.");
++            Command.broadcastCommandMessage(sender, Component.text("Graphite config reload complete.", NamedTextColor.GREEN));
 +        } else if (args[0].equalsIgnoreCase("version")) {
 +            Command verCmd = Bukkit.getServer().getCommandMap().getCommand("version");
 +            if (verCmd != null) return verCmd.execute(sender, commandLabel, new String[0]);
