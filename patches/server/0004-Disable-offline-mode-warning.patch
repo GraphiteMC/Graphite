@@ -1,0 +1,35 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrFishCakes <FinlayOxby@outlook.com>
+Date: Wed, 19 Jul 2023 11:00:22 +0100
+Subject: [PATCH] Disable offline mode warning
+
+Disable the offline mode warning printed when the server starts in offline mode
+
+diff --git a/src/main/java/dev/graphitemc/graphite/GraphiteConfig.java b/src/main/java/dev/graphitemc/graphite/GraphiteConfig.java
+index d43ca71f5e6dcdac25a462e5a212e9b339304af9..c11027cf180d4a9a4d7cc7cbe900cfb98120df75 100644
+--- a/src/main/java/dev/graphitemc/graphite/GraphiteConfig.java
++++ b/src/main/java/dev/graphitemc/graphite/GraphiteConfig.java
+@@ -254,4 +254,10 @@ public class GraphiteConfig {
+         }
+     }
+ 
++    public static boolean disableOfflineWarning;
++
++    private static void disableOfflineWarning() {
++        disableOfflineWarning = getBoolean("server.disable-offline-warning", false);
++    }
++
+ }
+diff --git a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
+index 5358a40c08acd6ecc08d1e0d736fd86e8e48f9ea..3d2fc017c2d89c1054018723733395a27da35d28 100644
+--- a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
++++ b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
+@@ -325,7 +325,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
+         String proxyFlavor = (io.papermc.paper.configuration.GlobalConfiguration.get().proxies.velocity.enabled) ? "Velocity" : "BungeeCord";
+         String proxyLink = (io.papermc.paper.configuration.GlobalConfiguration.get().proxies.velocity.enabled) ? "https://docs.papermc.io/velocity/security" : "http://www.spigotmc.org/wiki/firewall-guide/";
+         // Paper end
+-        if (!this.usesAuthentication()) {
++        if (!this.usesAuthentication() && !dev.graphitemc.graphite.GraphiteConfig.disableOfflineWarning) { // Graphite - Disable offline mode warning
+             DedicatedServer.LOGGER.warn("**** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!");
+             DedicatedServer.LOGGER.warn("The server will make no attempt to authenticate usernames. Beware.");
+             // Spigot start
