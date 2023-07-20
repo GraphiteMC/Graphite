@@ -165,10 +165,10 @@ index 0000000000000000000000000000000000000000..387ba01bfa1fa6606fc7582ba3da1d11
 +}
 diff --git a/src/main/java/dev/graphitemc/graphite/GraphiteWorldConfig.java b/src/main/java/dev/graphitemc/graphite/GraphiteWorldConfig.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..8637a546a98d314ab3e04e686683449e765a67c6
+index 0000000000000000000000000000000000000000..adff342f7587c99375e3064fd5bea0f1ae9e2b33
 --- /dev/null
 +++ b/src/main/java/dev/graphitemc/graphite/GraphiteWorldConfig.java
-@@ -0,0 +1,125 @@
+@@ -0,0 +1,119 @@
 +package dev.graphitemc.graphite;
 +
 +import com.google.common.base.Throwables;
@@ -285,12 +285,6 @@ index 0000000000000000000000000000000000000000..8637a546a98d314ab3e04e686683449e
 +    private <T> List<?> getList(String path, T def) {
 +        config.addDefault("world-settings." + path, def);
 +        return config.getList("world-settings." + path, Collections.emptyList());
-+    }
-+
-+    public String someString;
-+
-+    private void something() {
-+        someString = getString("SomeString", "Some default string");
 +    }
 +
 +}
