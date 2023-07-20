@@ -6,10 +6,10 @@ Subject: [PATCH] Graphite Configuration
 
 diff --git a/src/main/java/dev/graphitemc/graphite/GraphiteConfig.java b/src/main/java/dev/graphitemc/graphite/GraphiteConfig.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..86069800d2cf0192856f9994f1fa1b97d4f3c12f
+index 0000000000000000000000000000000000000000..387ba01bfa1fa6606fc7582ba3da1d1185380b29
 --- /dev/null
 +++ b/src/main/java/dev/graphitemc/graphite/GraphiteConfig.java
-@@ -0,0 +1,151 @@
+@@ -0,0 +1,153 @@
 +package dev.graphitemc.graphite;
 +
 +import com.google.common.base.Throwables;
@@ -35,8 +35,9 @@ index 0000000000000000000000000000000000000000..86069800d2cf0192856f9994f1fa1b97
 +
 +public class GraphiteConfig {
 +
-+    private static final String HEADER = "This is the main configuration file for Graphite.\n" +
-+            "More options, settings and features will be added overtime. This file will be updated accordingly to those features!";
++    private static final String HEADER = """
++            This is the main configuration file for Graphite.
++            More options, settings and features will be added overtime. This file will be updated accordingly to those features!""";
 +    private static File CONFIG_FILE;
 +    public static YamlConfiguration config;
 +
@@ -51,7 +52,6 @@ index 0000000000000000000000000000000000000000..86069800d2cf0192856f9994f1fa1b97
 +        try {
 +            config.load(CONFIG_FILE);
 +        } catch (IOException ignored) {
-+
 +        } catch (InvalidConfigurationException ex) {
 +            Bukkit.getLogger().log(Level.SEVERE, "Could not load graphite.yml, please correct your syntax errors", ex);
 +            throw Throwables.propagate(ex);
@@ -60,11 +60,13 @@ index 0000000000000000000000000000000000000000..86069800d2cf0192856f9994f1fa1b97
 +        config.options().header(HEADER);
 +        config.options().copyDefaults(true);
 +        verbose = getBoolean("verbose", false);
++        set("verbose", false);
 +
 +        commands = new HashMap<>();
 +        commands.put("graphite", new GraphiteCommand("graphite"));
 +
 +        version = getInt("config-version", 1);
++        set("config-version", 1);
 +
 +        readConfig(GraphiteConfig.class, null);
 +        Blocks.rebuildCache();
@@ -163,91 +165,141 @@ index 0000000000000000000000000000000000000000..86069800d2cf0192856f9994f1fa1b97
 +}
 diff --git a/src/main/java/dev/graphitemc/graphite/GraphiteWorldConfig.java b/src/main/java/dev/graphitemc/graphite/GraphiteWorldConfig.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..732abfcef720327b9d1cd31d75c333daebe66b1e
+index 0000000000000000000000000000000000000000..8637a546a98d314ab3e04e686683449e765a67c6
 --- /dev/null
 +++ b/src/main/java/dev/graphitemc/graphite/GraphiteWorldConfig.java
-@@ -0,0 +1,75 @@
+@@ -0,0 +1,125 @@
 +package dev.graphitemc.graphite;
 +
++import com.google.common.base.Throwables;
++import org.bukkit.Bukkit;
 +import org.bukkit.World;
 +import org.bukkit.configuration.ConfigurationSection;
++import org.bukkit.configuration.InvalidConfigurationException;
++import org.bukkit.configuration.file.YamlConfiguration;
 +
++import java.io.File;
++import java.io.IOException;
++import java.lang.reflect.InvocationTargetException;
++import java.lang.reflect.Method;
++import java.lang.reflect.Modifier;
++import java.util.Collection;
++import java.util.Collections;
 +import java.util.List;
 +import java.util.Map;
++import java.util.logging.Level;
 +
 +import static dev.graphitemc.graphite.GraphiteConfig.log;
 +
 +public class GraphiteWorldConfig {
 +
++    private static final String HEADER = """
++            This is the main configuration file for "%s".
++            More options, settings and features will be added overtime. This file will be updated accordingly to those features!""";
++
++    public YamlConfiguration config;
 +    private final String worldName;
 +    private final World.Environment environment;
 +
-+    public GraphiteWorldConfig(String worldName, World.Environment environment) {
++    public GraphiteWorldConfig(String worldName, World.Environment environment, File configFile) {
 +        this.worldName = worldName;
 +        this.environment = environment;
 +
-+        init();
++        init(configFile);
 +    }
 +
-+    public void init() {
++    public void init(File configFile) {
 +        log("-------- World Settings For [" + worldName + "] --------");
-+        GraphiteConfig.readConfig(GraphiteWorldConfig.class, this);
-+    }
++        try {
++            if (!configFile.exists()) {
++                configFile.createNewFile();
++            }
++        } catch (IOException ex) {
++            Bukkit.getLogger().log(Level.SEVERE, "Unable to create file " + configFile, ex);
++            throw Throwables.propagate(ex);
++        }
 +
-+    private void set(String path, Object val) {
-+        GraphiteConfig.config.addDefault("world-settings.default." + path, val);
-+        GraphiteConfig.config.set("world-settings.default." + path, val);
++        this.config = new YamlConfiguration();
++        try {
++            config.load(configFile);
++        } catch (IOException ignored) {
++        } catch (InvalidConfigurationException ex) {
++            Bukkit.getLogger().log(Level.SEVERE, String.format("Could not load %s, please correct your syntax errors", configFile.getName()), ex);
++            throw Throwables.propagate(ex);
++        }
 +
-+        if (GraphiteConfig.config.get("world-settings." + worldName + "." + path) != null) {
-+            GraphiteConfig.config.addDefault("world-settings." + worldName + "." + path, val);
-+            GraphiteConfig.config.set("world-settings." + worldName + "." + path, val);
++        config.options().header(String.format(HEADER, worldName));
++        config.options().copyDefaults(true);
++
++        for (Method method : getClass().getDeclaredMethods()) {
++            if (Modifier.isPrivate(method.getModifiers())) {
++                if (method.getParameterTypes().length == 0 && method.getReturnType() == Void.TYPE) {
++                    try {
++                        method.setAccessible(true);
++                        method.invoke(this);
++                    } catch (InvocationTargetException ex) {
++                        throw Throwables.propagate(ex.getCause());
++                    } catch (Exception ex) {
++                        Bukkit.getLogger().log(Level.SEVERE, "Error invoking " + method, ex);
++                    }
++                }
++            }
++        }
++
++        try {
++            config.save(configFile);
++        } catch (IOException ex) {
++            Bukkit.getLogger().log(Level.SEVERE, "Could not save " + configFile, ex);
 +        }
 +    }
 +
++    private void set(String path, Object val) {
++        config.addDefault("world-settings." + path, val);
++        config.set("world-settings." + path, val);
++    }
++
 +    private ConfigurationSection getConfigurationSection(String path) {
-+        ConfigurationSection section = GraphiteConfig.config.getConfigurationSection("world-settings." + worldName + "." + path);
-+        return section != null ? section : GraphiteConfig.config.getConfigurationSection("world-settings.default." + path);
++        return config.getConfigurationSection("world-settings." + path);
 +    }
 +
 +    private String getString(String path, String def) {
-+        GraphiteConfig.config.addDefault("world-settings.default." + path, def);
-+        return GraphiteConfig.config.getString("world-settings." + worldName + "." + path, GraphiteConfig.config.getString("world-settings.default." + path));
++        config.addDefault("world-settings." + path, def);
++        return config.getString("world-settings." + path, def);
 +    }
 +
 +    private boolean getBoolean(String path, boolean def) {
-+        GraphiteConfig.config.addDefault("world-settings.default." + path, def);
-+        return GraphiteConfig.config.getBoolean("world-settings." + worldName + "." + path, GraphiteConfig.config.getBoolean("world-settings.default." + path));
++        config.addDefault("world-settings." + path, def);
++        return config.getBoolean("world-settings." + path, def);
 +    }
 +
 +    private double getDouble(String path, double def) {
-+        GraphiteConfig.config.addDefault("world-settings.default." + path, def);
-+        return GraphiteConfig.config.getDouble("world-settings." + worldName + "." + path, GraphiteConfig.config.getDouble("world-settings.default." + path));
++        config.addDefault("world-settings." + path, def);
++        return config.getDouble("world-settings." + path, def);
 +    }
 +
 +    private int getInt(String path, int def) {
-+        GraphiteConfig.config.addDefault("world-settings.default." + path, def);
-+        return GraphiteConfig.config.getInt("world-settings." + worldName + "." + path, GraphiteConfig.config.getInt("world-settings.default." + path));
++        config.addDefault("world-settings." + path, def);
++        return config.getInt("world-settings." + path, def);
 +    }
 +
 +    private <T> List<?> getList(String path, T def) {
-+        GraphiteConfig.config.addDefault("world-settings.default." + path, def);
-+        return GraphiteConfig.config.getList("world-settings." + worldName + "." + path, GraphiteConfig.config.getList("world-settings.default." + path));
++        config.addDefault("world-settings." + path, def);
++        return config.getList("world-settings." + path, Collections.emptyList());
 +    }
 +
-+    private Map<String, Object> getMap(String path, Map<String, Object> def) {
-+        final Map<String, Object> fallback = GraphiteConfig.getMap("world-settings.default." + path, def);
-+        final Map<String, Object> value = GraphiteConfig.getMap("world-settings." + worldName + "." + path, null);
++    public String someString;
 +
-+        return value.isEmpty() ? fallback : value;
++    private void something() {
++        someString = getString("SomeString", "Some default string");
 +    }
 +
 +}
 diff --git a/src/main/java/dev/graphitemc/graphite/command/GraphiteCommand.java b/src/main/java/dev/graphitemc/graphite/command/GraphiteCommand.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..4ed06666dbadb1b3a8ced1cdbbe617ac2e4cfcd6
+index 0000000000000000000000000000000000000000..b86a7eb7a03ef9f1498c8a21d69e92f062ba3adc
 --- /dev/null
 +++ b/src/main/java/dev/graphitemc/graphite/command/GraphiteCommand.java
-@@ -0,0 +1,67 @@
+@@ -0,0 +1,66 @@
 +package dev.graphitemc.graphite.command;
 +
 +import dev.graphitemc.graphite.GraphiteConfig;
@@ -256,7 +308,6 @@ index 0000000000000000000000000000000000000000..4ed06666dbadb1b3a8ced1cdbbe617ac
 +import net.minecraft.server.MinecraftServer;
 +import net.minecraft.server.level.ServerLevel;
 +import org.bukkit.Bukkit;
-+import org.bukkit.ChatColor;
 +import org.bukkit.command.Command;
 +import org.bukkit.command.CommandSender;
 +import org.jetbrains.annotations.NotNull;
@@ -301,7 +352,7 @@ index 0000000000000000000000000000000000000000..4ed06666dbadb1b3a8ced1cdbbe617ac
 +            MinecraftServer console = MinecraftServer.getServer();
 +            GraphiteConfig.init((File) console.options.valueOf("graphite-settings"));
 +            for (ServerLevel level : console.getAllLevels()) {
-+                level.graphiteConfig.init();
++                level.graphiteConfig.init(new File(level.getWorld().getWorldFolder(), "graphite-world.yml"));
 +            }
 +
 +            console.server.reloadCount++;
@@ -335,28 +386,31 @@ index 12124d6fbc0406bb62bd95a0f7bab68afa43377c..5358a40c08acd6ecc08d1e0d736fd86e
          com.destroystokyo.paper.VersionHistoryManager.INSTANCE.getClass(); // load version history now
          io.papermc.paper.brigadier.PaperBrigadierProviderImpl.INSTANCE.getClass(); // init PaperBrigadierProvider
          // Paper end
-diff --git a/src/main/java/net/minecraft/world/level/Level.java b/src/main/java/net/minecraft/world/level/Level.java
-index bdb32964524cb2a4398b8d3bedfb03b0cb805b6d..f1dd21deadf5c5f5b5cb221f8f3c3c134d3e98d5 100644
---- a/src/main/java/net/minecraft/world/level/Level.java
-+++ b/src/main/java/net/minecraft/world/level/Level.java
-@@ -177,6 +177,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
- 
-     public final com.destroystokyo.paper.antixray.ChunkPacketBlockController chunkPacketBlockController; // Paper - Anti-Xray
-     public final org.purpurmc.purpur.PurpurWorldConfig purpurConfig; // Purpur
+diff --git a/src/main/java/net/minecraft/server/level/ServerLevel.java b/src/main/java/net/minecraft/server/level/ServerLevel.java
+index 221d1d0e1b4b46de6ebca5faac09bbda875fae17..81e79b0ab8a800c0abd186f7b45614e9762fe2a6 100644
+--- a/src/main/java/net/minecraft/server/level/ServerLevel.java
++++ b/src/main/java/net/minecraft/server/level/ServerLevel.java
+@@ -218,6 +218,7 @@ public class ServerLevel extends Level implements WorldGenLevel {
+     private boolean forceTime; // Purpur
+     private final RandomSequences randomSequences;
+     public long lastMidTickExecuteFailure; // Paper - execute chunk tasks mid tick
 +    public final dev.graphitemc.graphite.GraphiteWorldConfig graphiteConfig; // Graphite
-     public final co.aikar.timings.WorldTimingsHandler timings; // Paper
-     public static BlockPos lastPhysicsProblem; // Spigot
-     private org.spigotmc.TickLimiter entityLimiter;
-@@ -332,6 +333,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
-         this.spigotConfig = new org.spigotmc.SpigotWorldConfig(((net.minecraft.world.level.storage.PrimaryLevelData) worlddatamutable).getLevelName()); // Spigot
-         this.paperConfig = paperWorldConfigCreator.apply(this.spigotConfig); // Paper
-         this.purpurConfig = new org.purpurmc.purpur.PurpurWorldConfig(((net.minecraft.world.level.storage.PrimaryLevelData) worlddatamutable).getLevelName(), env); // Purpur
-+        this.graphiteConfig = new dev.graphitemc.graphite.GraphiteWorldConfig(((net.minecraft.world.level.storage.PrimaryLevelData) worlddatamutable).getLevelName(), env); // Graphite
-         this.playerBreedingCooldowns = this.getNewBreedingCooldownCache(); // Purpur
-         this.generator = gen;
-         this.world = new CraftWorld((ServerLevel) this, gen, biomeProvider, env);
+ 
+     // CraftBukkit start
+     public final LevelStorageSource.LevelStorageAccess convertable;
+@@ -653,6 +654,10 @@ public class ServerLevel extends Level implements WorldGenLevel {
+         super(iworlddataserver, resourcekey, minecraftserver.registryAccess(), worlddimension.type(), minecraftserver::getProfiler, false, flag, i, minecraftserver.getMaxChainedNeighborUpdates(), gen, biomeProvider, env, spigotConfig -> minecraftserver.paperConfigurations.createWorldConfig(io.papermc.paper.configuration.PaperConfigurations.createWorldContextMap(convertable_conversionsession.levelDirectory.path(), iworlddataserver.getLevelName(), resourcekey.location(), spigotConfig)), executor); // Paper - Async-Anti-Xray - Pass executor
+         this.pvpMode = minecraftserver.isPvpAllowed();
+         this.convertable = convertable_conversionsession;
++        // Graphite start
++        this.graphiteConfig = new dev.graphitemc.graphite.GraphiteWorldConfig(iworlddataserver.getLevelName(), env, new java.io.File(getWorld().getWorldFolder(), "graphite-world.yml"));
++        this.graphiteConfig.init(new java.io.File(getWorld().getWorldFolder(), "graphite-world.yml"));
++        // Graphite end
+         this.uuid = WorldUUID.getUUID(convertable_conversionsession.levelDirectory.path().toFile());
+         // CraftBukkit end
+         this.players = Lists.newArrayList();
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 7fd37983efee051b7e8dc07618950afa40987e5a..042eb3240fac61ca7e4f5698efdb61eb2de96ad1 100644
+index 7fd37983efee051b7e8dc07618950afa40987e5a..a73067800fdcdb44d551ba1015ce8df644e048b8 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -1071,6 +1071,7 @@ public final class CraftServer implements Server {
@@ -371,7 +425,7 @@ index 7fd37983efee051b7e8dc07618950afa40987e5a..042eb3240fac61ca7e4f5698efdb61eb
              }
              world.spigotConfig.init(); // Spigot
              world.purpurConfig.init(); // Purpur
-+            world.graphiteConfig.init(); // Graphite
++            world.graphiteConfig.init(new File(world.getWorld().getWorldFolder(), "graphite-world.yml")); // Graphite
          }
  
          Plugin[] pluginClone = pluginManager.getPlugins().clone(); // Paper
@@ -387,15 +441,30 @@ index 7fd37983efee051b7e8dc07618950afa40987e5a..042eb3240fac61ca7e4f5698efdb61eb
              return getProperties().properties;
          }
          // Purpur end
-+        // Graphite start
++        // Graphite start - Graphite configuration
 +        @Override
 +        public YamlConfiguration getGraphiteConfig() {
 +            return dev.graphitemc.graphite.GraphiteConfig.config;
 +        }
-+        // Graphite end
++        // Graphite end - Graphite configuration
  
          @Override
          public void restart() {
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+index f30c6e09adb3a6aa485357f859fc2a22227350c9..b93f912b791476dda8b355fedc114cc8c9a3824f 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+@@ -2479,4 +2479,10 @@ public class CraftWorld extends CraftRegionAccessor implements World {
+         return this.adventure$pointers;
+     }
+     // Paper end
++    // Graphite start - Graphite configuration
++    @Override
++    public org.bukkit.configuration.file.YamlConfiguration getGraphiteConfig() {
++        return getHandle().graphiteConfig.config;
++    }
++    // Graphite end - Graphite configuration
+ }
 diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
 index 0bc9b176a3b86a5b4153a2110621534c692d8240..68fcff421217fc082e0120cc0579e82f9ceafd3b 100644
 --- a/src/main/java/org/bukkit/craftbukkit/Main.java

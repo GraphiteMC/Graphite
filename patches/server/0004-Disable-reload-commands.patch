@@ -6,10 +6,10 @@ Subject: [PATCH] Disable reload commands
 Disable all reload commands from Bukkit, Spigot, Paper, Purpur and Graphite
 
 diff --git a/src/main/java/dev/graphitemc/graphite/GraphiteConfig.java b/src/main/java/dev/graphitemc/graphite/GraphiteConfig.java
-index e1d9b62c5e0ec4a65d7305d9c8f1e23d00ec2500..53eca983ca821e6ce98ebe11899dd4e725bf8281 100644
+index 42ed14d8ad391208c879e7c2fcfc084798acf491..98e56ba772d07be9f7cf4462467190756e956827 100644
 --- a/src/main/java/dev/graphitemc/graphite/GraphiteConfig.java
 +++ b/src/main/java/dev/graphitemc/graphite/GraphiteConfig.java
-@@ -253,4 +253,10 @@ public class GraphiteConfig {
+@@ -255,4 +255,10 @@ public class GraphiteConfig {
          }
      }
  
@@ -21,10 +21,10 @@ index e1d9b62c5e0ec4a65d7305d9c8f1e23d00ec2500..53eca983ca821e6ce98ebe11899dd4e7
 +
  }
 diff --git a/src/main/java/dev/graphitemc/graphite/command/GraphiteCommand.java b/src/main/java/dev/graphitemc/graphite/command/GraphiteCommand.java
-index 4ed06666dbadb1b3a8ced1cdbbe617ac2e4cfcd6..bc8df72ffcd1bafb4acdc9d597f63c0a5158f86a 100644
+index b86a7eb7a03ef9f1498c8a21d69e92f062ba3adc..823020a5d1bff316aa4c5029b512854a43c68e05 100644
 --- a/src/main/java/dev/graphitemc/graphite/command/GraphiteCommand.java
 +++ b/src/main/java/dev/graphitemc/graphite/command/GraphiteCommand.java
-@@ -45,6 +45,11 @@ public class GraphiteCommand extends Command {
+@@ -44,6 +44,11 @@ public class GraphiteCommand extends Command {
          }
  
          if (args[0].equalsIgnoreCase("reload")) {
