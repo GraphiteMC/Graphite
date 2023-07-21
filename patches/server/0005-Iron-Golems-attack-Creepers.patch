@@ -1,0 +1,69 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrFishCakes <FinlayOxby@outlook.com>
+Date: Fri, 21 Jul 2023 11:25:12 +0100
+Subject: [PATCH] Iron Golems attack Creepers
+
+Iron Golems now have the ability to attack Creepers
+
+diff --git a/src/main/java/dev/graphitemc/graphite/GraphiteWorldConfig.java b/src/main/java/dev/graphitemc/graphite/GraphiteWorldConfig.java
+index adff342f7587c99375e3064fd5bea0f1ae9e2b33..8d3706d8d8a3d4770bc3bd813f3a00495cd287c8 100644
+--- a/src/main/java/dev/graphitemc/graphite/GraphiteWorldConfig.java
++++ b/src/main/java/dev/graphitemc/graphite/GraphiteWorldConfig.java
+@@ -116,4 +116,10 @@ public class GraphiteWorldConfig {
+         return config.getList("world-settings." + path, Collections.emptyList());
+     }
+ 
++    public boolean ironGolemsAttackCreepers;
++
++    private void ironGolemsTargetCreepers() {
++        ironGolemsAttackCreepers = getBoolean("mobs.iron-golem.target-creepers", false);
++    }
++
+ }
+diff --git a/src/main/java/net/minecraft/world/entity/animal/IronGolem.java b/src/main/java/net/minecraft/world/entity/animal/IronGolem.java
+index 64aba511e615983988cdb6a0fd45b7d9d4f2f16d..c1705577bd96ba1d726c76f5dcc86ac51c889cfb 100644
+--- a/src/main/java/net/minecraft/world/entity/animal/IronGolem.java
++++ b/src/main/java/net/minecraft/world/entity/animal/IronGolem.java
+@@ -125,7 +125,7 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
+         this.targetSelector.addGoal(2, new HurtByTargetGoal(this, new Class[0]));
+         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Player.class, 10, true, false, this::isAngryAt));
+         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, Mob.class, 5, false, false, (entityliving) -> {
+-            return entityliving instanceof Enemy && !(entityliving instanceof Creeper);
++            return level().graphiteConfig.ironGolemsAttackCreepers ? entityliving instanceof Enemy : entityliving instanceof Enemy && !(entityliving instanceof Creeper); // Graphite - Iron golems attack Creepers
+         }));
+         this.targetSelector.addGoal(4, new ResetUniversalAngerTargetGoal<>(this, false));
+     }
+@@ -147,9 +147,17 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
+ 
+     @Override
+     protected void doPush(Entity entity) {
+-        if (entity instanceof Enemy && !(entity instanceof Creeper) && this.getRandom().nextInt(20) == 0) {
+-            this.setTarget((LivingEntity) entity, org.bukkit.event.entity.EntityTargetLivingEntityEvent.TargetReason.COLLISION, true); // CraftBukkit - set reason
++        // Graphite start - Iron golems attack Creepers
++        if (level().graphiteConfig.ironGolemsAttackCreepers) {
++            if (entity instanceof Enemy && this.getRandom().nextInt(20) == 0) {
++                this.setTarget((LivingEntity) entity, org.bukkit.event.entity.EntityTargetLivingEntityEvent.TargetReason.COLLISION, true); // CraftBukkit - set reason
++            }
++        } else {
++            if (entity instanceof Enemy && !(entity instanceof Creeper) && this.getRandom().nextInt(20) == 0) {
++                this.setTarget((LivingEntity) entity, org.bukkit.event.entity.EntityTargetLivingEntityEvent.TargetReason.COLLISION, true); // CraftBukkit - set reason
++            }
+         }
++        // Graphite end - Iron golems attack Creepers
+ 
+         super.doPush(entity);
+     }
+@@ -178,7 +186,12 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
+ 
+     @Override
+     public boolean canAttackType(EntityType<?> type) {
+-        return this.isPlayerCreated() && type == EntityType.PLAYER ? false : (type == EntityType.CREEPER ? false : super.canAttackType(type));
++        // Graphite start - Iron golems attack Creepers
++        // return this.isPlayerCreated() && type == EntityType.PLAYER ? false : (type == EntityType.CREEPER ? false : super.canAttackType(type));
++        if (this.isPlayerCreated() && type == EntityType.PLAYER) return false;
++        if (type == EntityType.CREEPER) return level().graphiteConfig.ironGolemsAttackCreepers;
++        return super.canAttackType(type);
++        // Graphite end - Iron golems attack Creepers
+     }
+ 
+     @Override
