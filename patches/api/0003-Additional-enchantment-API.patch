@@ -1,0 +1,63 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrFishCakes <FinlayOxby@outlook.com>
+Date: Wed, 26 Jul 2023 21:15:17 +0100
+Subject: [PATCH] Additional enchantment API
+
+
+diff --git a/src/main/java/org/bukkit/enchantments/Enchantment.java b/src/main/java/org/bukkit/enchantments/Enchantment.java
+index 4cfe8501368f601fdd4203570f4e6a8f6f9685e6..33d99321ca29145e0e4688bd907cf0bd0657a062 100644
+--- a/src/main/java/org/bukkit/enchantments/Enchantment.java
++++ b/src/main/java/org/bukkit/enchantments/Enchantment.java
+@@ -443,4 +443,52 @@ public abstract class Enchantment implements Keyed, net.kyori.adventure.translat
+     public static Enchantment[] values() {
+         return byName.values().toArray(new Enchantment[byName.size()]);
+     }
++    // Graphite start - Additional enchantment API
++    /**
++     * Start accepting any enchantment registrations
++     */
++    public static void allowAcceptingRegistrations() {
++        acceptingNew = true;
++    }
++
++    /**
++     * Forcefully register enchantments to the server by bypassing the Enchantment#acceptingNew field
++     *
++     * @param enchantments Enchantments to register
++     * @see Enchantment#acceptingNew
++     */
++    public static void forceRegisterEnchantments(@NotNull Enchantment... enchantments) {
++        if (!isAcceptingRegistrations()) allowAcceptingRegistrations();
++
++        for (Enchantment enchantment : enchantments) {
++            if (byKey.containsKey(enchantment.key) || byName.containsKey(enchantment.getName())) {
++                throw new IllegalArgumentException("Cannot set already-set enchantment");
++            }
++
++            byKey.put(enchantment.key, enchantment);
++            byName.put(enchantment.getName(), enchantment);
++        }
++
++        stopAcceptingRegistrations();
++    }
++
++    /**
++     * Forcefully register an enchantment to the server by bypassing the Enchantment#acceptingNew field
++     *
++     * @param enchantment Enchantment to register
++     * @see Enchantment#acceptingNew
++     */
++    public static void forceRegisterEnchantment(@NotNull Enchantment enchantment) {
++        if (byKey.containsKey(enchantment.key) || byName.containsKey(enchantment.getName())) {
++            throw new IllegalArgumentException("Cannot set already-set enchantment");
++        } else if (!isAcceptingRegistrations()) {
++            allowAcceptingRegistrations();
++        }
++
++        byKey.put(enchantment.key, enchantment);
++        byName.put(enchantment.getName(), enchantment);
++
++        stopAcceptingRegistrations();
++    }
++    // Graphite end - Additional enchantment API
+ }
