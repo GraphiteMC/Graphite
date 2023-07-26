@@ -1,0 +1,34 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrFishCakes <FinlayOxby@outlook.com>
+Date: Wed, 26 Jul 2023 21:50:24 +0100
+Subject: [PATCH] Fix MC-93018
+
+
+diff --git a/src/main/java/net/minecraft/world/entity/animal/Wolf.java b/src/main/java/net/minecraft/world/entity/animal/Wolf.java
+index 64bceae4d06b35fcbecb0daca2496ba30e39d995..4092e92f148c142065b73487d7ce74073715be3c 100644
+--- a/src/main/java/net/minecraft/world/entity/animal/Wolf.java
++++ b/src/main/java/net/minecraft/world/entity/animal/Wolf.java
+@@ -653,15 +653,20 @@ public class Wolf extends TamableAnimal implements NeutralMob {
+     public boolean canMate(Animal other) {
+         if (other == this) {
+             return false;
+-        } else if (!this.isTame()) {
+-            return false;
++        // Graphite start - Fix MC-93018
++        /*} else if (!this.isTame()) {
++            return false;*/
+         } else if (!(other instanceof Wolf)) {
+             return false;
+         } else {
+             Wolf entitywolf = (Wolf) other;
+ 
+-            return !entitywolf.isTame() ? false : (entitywolf.isInSittingPose() ? false : this.isInLove() && entitywolf.isInLove());
++            if (entitywolf.isInSittingPose()) return false;
++
++            return this.isInLove() && entitywolf.isInLove();
++            //return !entitywolf.isTame() ? false : (entitywolf.isInSittingPose() ? false : this.isInLove() && entitywolf.isInLove());
+         }
++        // Graphite end - Fix MC-93018
+     }
+ 
+     public boolean isInterested() {
