@@ -6,16 +6,16 @@ Subject: [PATCH] Iron Golems attack Creepers
 Iron Golems now have the ability to attack Creepers
 
 diff --git a/src/main/java/dev/graphitemc/graphite/GraphiteWorldConfig.java b/src/main/java/dev/graphitemc/graphite/GraphiteWorldConfig.java
-index adff342f7587c99375e3064fd5bea0f1ae9e2b33..8d3706d8d8a3d4770bc3bd813f3a00495cd287c8 100644
+index a90edc0c9b4da596e4608cbc8cf3ab04c09d0f2f..f630c2d79ef9f951817fec217b985af9d28e85da 100644
 --- a/src/main/java/dev/graphitemc/graphite/GraphiteWorldConfig.java
 +++ b/src/main/java/dev/graphitemc/graphite/GraphiteWorldConfig.java
-@@ -116,4 +116,10 @@ public class GraphiteWorldConfig {
-         return config.getList("world-settings." + path, Collections.emptyList());
+@@ -132,4 +132,10 @@ public class GraphiteWorldConfig {
+         allowRawIronBlasting = getBoolean("recipes.raw-ore-smelting.raw-iron-block.blasting.enabled", true);
      }
  
 +    public boolean ironGolemsAttackCreepers;
 +
-+    private void ironGolemsTargetCreepers() {
++    private void ironGolemSettings() {
 +        ironGolemsAttackCreepers = getBoolean("mobs.iron-golem.target-creepers", false);
 +    }
 +

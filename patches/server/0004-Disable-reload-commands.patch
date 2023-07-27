@@ -6,10 +6,10 @@ Subject: [PATCH] Disable reload commands
 Disable all reload commands from Bukkit, Spigot, Paper, Purpur and Graphite
 
 diff --git a/src/main/java/dev/graphitemc/graphite/GraphiteConfig.java b/src/main/java/dev/graphitemc/graphite/GraphiteConfig.java
-index 42ed14d8ad391208c879e7c2fcfc084798acf491..98e56ba772d07be9f7cf4462467190756e956827 100644
+index d2710d19fa92d797611c431ede28366a84498770..4d4411e75894924cb4781e31ec0f9ba67b66bcca 100644
 --- a/src/main/java/dev/graphitemc/graphite/GraphiteConfig.java
 +++ b/src/main/java/dev/graphitemc/graphite/GraphiteConfig.java
-@@ -255,4 +255,10 @@ public class GraphiteConfig {
+@@ -271,4 +271,10 @@ public class GraphiteConfig {
          }
      }
  
