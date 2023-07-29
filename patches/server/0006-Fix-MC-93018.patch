@@ -1,20 +1,35 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: MrFishCakes <FinlayOxby@outlook.com>
-Date: Wed, 26 Jul 2023 21:50:24 +0100
+Date: Sat, 29 Jul 2023 23:18:40 +0100
 Subject: [PATCH] Fix MC-93018
 
+See: https://bugs.mojang.com/browse/MC-93018
 
+diff --git a/src/main/java/dev/graphitemc/graphite/configuration/LevelConfigurations.java b/src/main/java/dev/graphitemc/graphite/configuration/LevelConfigurations.java
+index d65705e77fab5e8f2e75f304b8bcba77c786c11e..bbf2465be21ac530018267047c96d3309abd15d2 100644
+--- a/src/main/java/dev/graphitemc/graphite/configuration/LevelConfigurations.java
++++ b/src/main/java/dev/graphitemc/graphite/configuration/LevelConfigurations.java
+@@ -41,6 +41,7 @@ public class LevelConfigurations extends ConfigurationPart {
+     public class Miscellaneous extends ConfigurationPart {
+ 
+         public boolean fixMC31819 = true;
++        public boolean fixMC93018 = true;
+ 
+     }
+ 
 diff --git a/src/main/java/net/minecraft/world/entity/animal/Wolf.java b/src/main/java/net/minecraft/world/entity/animal/Wolf.java
-index 64bceae4d06b35fcbecb0daca2496ba30e39d995..4092e92f148c142065b73487d7ce74073715be3c 100644
+index 64bceae4d06b35fcbecb0daca2496ba30e39d995..9d8e90c15723b1ea9b3efed886afa9dd643b89d8 100644
 --- a/src/main/java/net/minecraft/world/entity/animal/Wolf.java
 +++ b/src/main/java/net/minecraft/world/entity/animal/Wolf.java
-@@ -653,15 +653,20 @@ public class Wolf extends TamableAnimal implements NeutralMob {
+@@ -651,17 +651,20 @@ public class Wolf extends TamableAnimal implements NeutralMob {
+ 
+     @Override
      public boolean canMate(Animal other) {
++        // Graphite start - Fix MC-93018
          if (other == this) {
              return false;
 -        } else if (!this.isTame()) {
 -            return false;
-+        // Graphite start - Fix MC-93018
 +        /*} else if (!this.isTame()) {
 +            return false;*/
          } else if (!(other instanceof Wolf)) {
@@ -24,9 +39,7 @@ index 64bceae4d06b35fcbecb0daca2496ba30e39d995..4092e92f148c142065b73487d7ce7407
  
 -            return !entitywolf.isTame() ? false : (entitywolf.isInSittingPose() ? false : this.isInLove() && entitywolf.isInLove());
 +            if (entitywolf.isInSittingPose()) return false;
-+
-+            return this.isInLove() && entitywolf.isInLove();
-+            //return !entitywolf.isTame() ? false : (entitywolf.isInSittingPose() ? false : this.isInLove() && entitywolf.isInLove());
++            return entitywolf.isInLove() && this.isInLove();
          }
 +        // Graphite end - Fix MC-93018
      }

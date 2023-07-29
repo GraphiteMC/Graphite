@@ -1,0 +1,36 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrFishCakes <FinlayOxby@outlook.com>
+Date: Sat, 29 Jul 2023 22:59:41 +0100
+Subject: [PATCH] Fix MC-31819
+
+See: https://bugs.mojang.com/browse/MC-31819
+
+diff --git a/src/main/java/dev/graphitemc/graphite/configuration/LevelConfigurations.java b/src/main/java/dev/graphitemc/graphite/configuration/LevelConfigurations.java
+index 4b285cfd9aab4fbac044f2922ba0a4a5f701a731..d65705e77fab5e8f2e75f304b8bcba77c786c11e 100644
+--- a/src/main/java/dev/graphitemc/graphite/configuration/LevelConfigurations.java
++++ b/src/main/java/dev/graphitemc/graphite/configuration/LevelConfigurations.java
+@@ -36,4 +36,12 @@ public class LevelConfigurations extends ConfigurationPart {
+ 
+     }
+ 
++    public Miscellaneous misc;
++
++    public class Miscellaneous extends ConfigurationPart {
++
++        public boolean fixMC31819 = true;
++
++    }
++
+ }
+diff --git a/src/main/java/net/minecraft/world/entity/player/Player.java b/src/main/java/net/minecraft/world/entity/player/Player.java
+index d00035e31cf4773a418d1cc6a6018d08e6b558f0..528feae2ca2d30149f46b8307cce9990644f9aa9 100644
+--- a/src/main/java/net/minecraft/world/entity/player/Player.java
++++ b/src/main/java/net/minecraft/world/entity/player/Player.java
+@@ -1968,6 +1968,7 @@ public abstract class Player extends LivingEntity {
+     }
+ 
+     public void causeFoodExhaustion(float f, EntityExhaustionEvent.ExhaustionReason reason) {
++        if (this.level().graphiteConfiguration().misc.fixMC31819 && this.level().getDifficulty() == Difficulty.PEACEFUL) return; // Graphite - Fix MC-31819
+         // CraftBukkit end
+         if (!this.abilities.invulnerable) {
+             if (!this.level().isClientSide) {

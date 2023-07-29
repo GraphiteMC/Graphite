@@ -1,0 +1,108 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrFishCakes <FinlayOxby@outlook.com>
+Date: Sat, 29 Jul 2023 22:14:20 +0100
+Subject: [PATCH] Disable Reload Commands
+
+Disable all reload commands from Bukkit, Spigot, Paper, Purpur and Graphite
+
+diff --git a/src/main/java/dev/graphitemc/graphite/command/ReloadCommand.java b/src/main/java/dev/graphitemc/graphite/command/ReloadCommand.java
+index cb1774130d3a50ca7507f855e1b7b3e21b1437d1..5d8ac5829a3f6686779dc8f861989a0042832650 100644
+--- a/src/main/java/dev/graphitemc/graphite/command/ReloadCommand.java
++++ b/src/main/java/dev/graphitemc/graphite/command/ReloadCommand.java
+@@ -1,6 +1,8 @@
+ package dev.graphitemc.graphite.command;
+ 
++import dev.graphitemc.graphite.configuration.GlobalConfiguration;
+ import net.kyori.adventure.text.format.NamedTextColor;
++import net.kyori.adventure.text.minimessage.MiniMessage;
+ import net.minecraft.server.MinecraftServer;
+ import org.bukkit.Bukkit;
+ import org.bukkit.command.Command;
+@@ -13,6 +15,11 @@ public class ReloadCommand implements GraphiteSubCommand {
+ 
+     @Override
+     public boolean execute(CommandSender sender, String subCommand, String[] args) {
++        if (GlobalConfiguration.get().serverOptions.serverReloading.disableCommands) {
++            Command.broadcastCommandMessage(sender, MiniMessage.miniMessage().deserialize(GlobalConfiguration.get().serverOptions.serverReloading.disabledMessage));
++            return true;
++        }
++
+         Command.broadcastCommandMessage(sender, text("Please note that this command is not supported and may cause issues.", NamedTextColor.RED));
+         Command.broadcastCommandMessage(sender, text("If you encounter any issues pleas use the /stop command to restart your server.", NamedTextColor.RED));
+ 
+diff --git a/src/main/java/dev/graphitemc/graphite/configuration/GlobalConfiguration.java b/src/main/java/dev/graphitemc/graphite/configuration/GlobalConfiguration.java
+index 0b53bce45408148b94ca7f341f57d26b96333b15..0831a6a70dc3785f3c4f74f68074f3851723254e 100644
+--- a/src/main/java/dev/graphitemc/graphite/configuration/GlobalConfiguration.java
++++ b/src/main/java/dev/graphitemc/graphite/configuration/GlobalConfiguration.java
+@@ -20,4 +20,17 @@ public class GlobalConfiguration extends ConfigurationPart {
+     @Setting(Configuration.VERSION_FIELD)
+     public int version = CURRENT_VERSION;
+ 
++    public ServerOptions serverOptions;
++    public class ServerOptions extends ConfigurationPart {
++
++        public ServerReloading serverReloading;
++        public class ServerReloading extends ConfigurationPart {
++
++            public boolean disableCommands = true;
++            public String disabledMessage = "<click:open_url:'https://github.com/GraphiteMC/Graphite/wiki'><red>Reload commands have been disabled by Graphite. Please check the wiki for more information!</click>";
++
++        }
++
++    }
++
+ }
+diff --git a/src/main/java/io/papermc/paper/command/subcommands/ReloadCommand.java b/src/main/java/io/papermc/paper/command/subcommands/ReloadCommand.java
+index bd68139ae635f2ad7ec8e7a21e0056a139c4c62e..eb4e228bb4cee7b8c2f59a78d8c59e63119e8877 100644
+--- a/src/main/java/io/papermc/paper/command/subcommands/ReloadCommand.java
++++ b/src/main/java/io/papermc/paper/command/subcommands/ReloadCommand.java
+@@ -21,6 +21,13 @@ public final class ReloadCommand implements PaperSubcommand {
+     }
+ 
+     private void doReload(final CommandSender sender) {
++        // Graphite start - Disable Reload Commands
++        if (dev.graphitemc.graphite.configuration.GlobalConfiguration.get().serverOptions.serverReloading.disableCommands) {
++            Command.broadcastCommandMessage(sender, net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().deserialize(
++                    dev.graphitemc.graphite.configuration.GlobalConfiguration.get().serverOptions.serverReloading.disabledMessage));
++            return;
++        }
++        // Graphite end - Disable Reload Commands
+         Command.broadcastCommandMessage(sender, text("Please note that this command is not supported and may cause issues.", RED));
+         Command.broadcastCommandMessage(sender, text("If you encounter any issues please use the /stop command to restart your server.", RED));
+ 
+diff --git a/src/main/java/org/purpurmc/purpur/command/PurpurCommand.java b/src/main/java/org/purpurmc/purpur/command/PurpurCommand.java
+index 2621e54879e9ab0029a875f1d09eee67878b90d5..1fa577b5d88bb070f7b3effb9c3df5fc9ba59a8e 100644
+--- a/src/main/java/org/purpurmc/purpur/command/PurpurCommand.java
++++ b/src/main/java/org/purpurmc/purpur/command/PurpurCommand.java
+@@ -42,6 +42,13 @@ public class PurpurCommand extends Command {
+         }
+ 
+         if (args[0].equalsIgnoreCase("reload")) {
++            // Graphite start - Disable Reload Commands
++            if (dev.graphitemc.graphite.configuration.GlobalConfiguration.get().serverOptions.serverReloading.disableCommands) {
++                Command.broadcastCommandMessage(sender, net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().deserialize(
++                        dev.graphitemc.graphite.configuration.GlobalConfiguration.get().serverOptions.serverReloading.disabledMessage));
++                return true;
++            }
++            // Graphite end - Disable Reload Commands
+             Command.broadcastCommandMessage(sender, ChatColor.RED + "Please note that this command is not supported and may cause issues.");
+             Command.broadcastCommandMessage(sender, ChatColor.RED + "If you encounter any issues please use the /stop command to restart your server.");
+ 
+diff --git a/src/main/java/org/spigotmc/SpigotCommand.java b/src/main/java/org/spigotmc/SpigotCommand.java
+index 3112a8695639c402e9d18710acbc11cff5611e9c..53efee1cf2c0d3d22ca50059415d955f8f1b26f5 100644
+--- a/src/main/java/org/spigotmc/SpigotCommand.java
++++ b/src/main/java/org/spigotmc/SpigotCommand.java
+@@ -26,6 +26,13 @@ public class SpigotCommand extends Command {
+         }
+ 
+         if (args[0].equals("reload")) {
++            // Graphite start - Disable Reload Commands
++            if (dev.graphitemc.graphite.configuration.GlobalConfiguration.get().serverOptions.serverReloading.disableCommands) {
++                Command.broadcastCommandMessage(sender, net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().deserialize(
++                        dev.graphitemc.graphite.configuration.GlobalConfiguration.get().serverOptions.serverReloading.disabledMessage));
++                return true;
++            }
++            // Graphite end - Disable Reload Commands
+             Command.broadcastCommandMessage(sender, ChatColor.RED + "Please note that this command is not supported and may cause issues.");
+             Command.broadcastCommandMessage(sender, ChatColor.RED + "If you encounter any issues please use the /stop command to restart your server.");
+ 

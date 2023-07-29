@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: MrFishCakes <FinlayOxby@outlook.com>
 Date: Wed, 26 Jul 2023 21:15:17 +0100
-Subject: [PATCH] Additional enchantment API
+Subject: [PATCH] Additional Enchantment API
 
 
 diff --git a/src/main/java/org/bukkit/enchantments/Enchantment.java b/src/main/java/org/bukkit/enchantments/Enchantment.java

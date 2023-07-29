@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrFishCakes <FinlayOxby@outlook.com>
+Date: Sat, 29 Jul 2023 22:21:00 +0100
+Subject: [PATCH] Disable Reload Commands
+
+Disable all reload commands from Bukkit, Spigot, Paper, Purpur and Graphite
+
+diff --git a/src/main/java/org/bukkit/command/defaults/ReloadCommand.java b/src/main/java/org/bukkit/command/defaults/ReloadCommand.java
+index 3ec32b46264cfff857b50129b5e0fa5584943ec6..178592221b5262158d9a3196a333cbcb435990c2 100644
+--- a/src/main/java/org/bukkit/command/defaults/ReloadCommand.java
++++ b/src/main/java/org/bukkit/command/defaults/ReloadCommand.java
+@@ -21,7 +21,14 @@ public class ReloadCommand extends BukkitCommand {
+     @Override
+     public boolean execute(@NotNull CommandSender sender, @NotNull String currentAlias, @NotNull String[] args) { // Paper
+         if (!testPermission(sender)) return true;
+-
++        // Graphite start - Disable Reload Commands
++        if (Bukkit.getServer().spigot().getGraphiteConfig().getBoolean("server-options.server-reloading.disable-commands", true)) {
++            Command.broadcastCommandMessage(sender, net.kyori.adventure.text.minimessage.MiniMessage.miniMessage().deserialize(
++                    Bukkit.getServer().spigot().getGraphiteConfig().getString("server-options.server-reloading.disable-commands",
++                            "<click:open_url:'https://github.com/GraphiteMC/Graphite/wiki'><red>Reload commands have been disabled by Graphite. Please check the wiki for more information!</click>")));
++            return true;
++        }
++        // Graphite end - Disable Reload Commands
+         // Paper start - Reload permissions.yml & require confirm
+         boolean confirmed = System.getProperty("LetMeReload") != null;
+         if (args.length == 1) {

@@ -22,20 +22,3 @@ index 916b9a9f05c0e83109bc9a4eb1692e2ed6e81eaf..aaff3484283f5c1dfa742582266f9f47
          /**
           * Sends the component to the player
           *
-diff --git a/src/main/java/org/bukkit/World.java b/src/main/java/org/bukkit/World.java
-index bf39c6602cfca70a6352519fa26059cd79143cdd..e1432bf57802177079f7936c11277c2b68059668 100644
---- a/src/main/java/org/bukkit/World.java
-+++ b/src/main/java/org/bukkit/World.java
-@@ -4079,6 +4079,12 @@ public interface World extends RegionAccessor, WorldInfo, PluginMessageRecipient
-      */
-     @NotNull
-     public Set<FeatureFlag> getFeatureFlags();
-+    // Graphite start - Graphite configuration
-+    @NotNull
-+    default org.bukkit.configuration.file.YamlConfiguration getGraphiteConfig() {
-+        throw new UnsupportedOperationException("Not supported yet.");
-+    }
-+    // Graphite end - Graphite configuration
- 
-     /**
-      * Represents various map environment types that a world may be
