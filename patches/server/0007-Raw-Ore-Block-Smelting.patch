@@ -1,0 +1,278 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrFishCakes <FinlayOxby@outlook.com>
+Date: Sun, 30 Jul 2023 16:27:12 +0100
+Subject: [PATCH] Raw Ore Block Smelting
+
+One raw ore block will smelt into 9 ingots of the type. Can be toggeled per-world for each raw ore type
+
+diff --git a/src/main/java/dev/graphitemc/graphite/configuration/GlobalConfiguration.java b/src/main/java/dev/graphitemc/graphite/configuration/GlobalConfiguration.java
+index 0831a6a70dc3785f3c4f74f68074f3851723254e..623b7c8dc0a740afb98e8dd586a571c34e2d3d5b 100644
+--- a/src/main/java/dev/graphitemc/graphite/configuration/GlobalConfiguration.java
++++ b/src/main/java/dev/graphitemc/graphite/configuration/GlobalConfiguration.java
+@@ -33,4 +33,49 @@ public class GlobalConfiguration extends ConfigurationPart {
+ 
+     }
+ 
++    public Recipes recipes;
++
++    public class Recipes extends ConfigurationPart {
++
++        public RawOreBlockSmelting rawOreBlockSmelting;
++
++        public class RawOreBlockSmelting extends ConfigurationPart {
++
++            public RawCopper rawCopper;
++
++            public class RawCopper extends ConfigurationPart {
++
++                public int furnaceCookTime = 1800;
++                public double furnaceExperience = 6.3D;
++                public int blastingCookTime = 900;
++                public double blastingExperience = 6.3D;
++
++            }
++
++            public RawGold rawGold;
++
++            public class RawGold extends ConfigurationPart {
++
++                public int furnaceCookTime = 1800;
++                public double furnaceExperience = 9.0D;
++                public int blastingCookTime = 900;
++                public double blastingExperience = 9.0D;
++
++            }
++
++            public RawIron rawIron;
++
++            public class RawIron extends ConfigurationPart {
++
++                public int furnaceCookTime = 1800;
++                public double furnaceExperience = 6.3D;
++                public int blastingCookTime = 900;
++                public double blastingExperience = 6.3D;
++
++            }
++
++        }
++
++    }
++
+ }
+diff --git a/src/main/java/dev/graphitemc/graphite/configuration/LevelConfigurations.java b/src/main/java/dev/graphitemc/graphite/configuration/LevelConfigurations.java
+index bbf2465be21ac530018267047c96d3309abd15d2..5c7e1deb6955ec097ba385c053de9ab30489d075 100644
+--- a/src/main/java/dev/graphitemc/graphite/configuration/LevelConfigurations.java
++++ b/src/main/java/dev/graphitemc/graphite/configuration/LevelConfigurations.java
+@@ -43,6 +43,45 @@ public class LevelConfigurations extends ConfigurationPart {
+         public boolean fixMC31819 = true;
+         public boolean fixMC93018 = true;
+ 
++        public Recipes recipes;
++
++        public class Recipes extends ConfigurationPart {
++
++            public RawOreBlockSmelting rawOreBlockSmelting;
++
++            public class RawOreBlockSmelting extends ConfigurationPart {
++
++                public RawCopper rawCopper;
++
++                public class RawCopper extends ConfigurationPart {
++
++                    public boolean allowFurnace = true;
++                    public boolean allowBlasting = true;
++
++                }
++
++                public RawGold rawGold;
++
++                public class RawGold extends ConfigurationPart {
++
++                    public boolean allowFurnace = true;
++                    public boolean allowBlasting = true;
++
++                }
++
++                public RawIron rawIron;
++
++                public class RawIron extends ConfigurationPart {
++
++                    public boolean allowFurnace = true;
++                    public boolean allowBlasting = true;
++
++                }
++
++            }
++
++        }
++
+     }
+ 
+ }
+diff --git a/src/main/java/dev/graphitemc/graphite/recipe/GraphiteRecipes.java b/src/main/java/dev/graphitemc/graphite/recipe/GraphiteRecipes.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..19ca9a337819aa4f44ab676d3bd22c607c1b23bf
+--- /dev/null
++++ b/src/main/java/dev/graphitemc/graphite/recipe/GraphiteRecipes.java
+@@ -0,0 +1,60 @@
++package dev.graphitemc.graphite.recipe;
++
++import dev.graphitemc.graphite.configuration.GlobalConfiguration;
++import org.bukkit.Bukkit;
++import org.bukkit.Material;
++import org.bukkit.NamespacedKey;
++import org.bukkit.inventory.BlastingRecipe;
++import org.bukkit.inventory.FurnaceRecipe;
++import org.bukkit.inventory.ItemStack;
++import org.bukkit.inventory.Recipe;
++
++import java.util.HashMap;
++import java.util.Map;
++
++public final class GraphiteRecipes {
++
++    private GraphiteRecipes() {
++    }
++
++    private static final Map<NamespacedKey, Recipe> RECIPES = new HashMap<>();
++
++    private static final NamespacedKey RAW_COPPER_BLOCK_FURNACE = new NamespacedKey("graphite", "raw_copper_block_furnace");
++    private static final NamespacedKey RAW_COPPER_BLOCK_BLASTING = new NamespacedKey("graphite", "raw_copper_block_blasting");
++    private static final NamespacedKey RAW_GOLD_BLOCK_FURNACE = new NamespacedKey("graphite", "raw_gold_block_furnace");
++    private static final NamespacedKey RAW_GOLD_BLOCK_BLASTING = new NamespacedKey("graphite", "raw_gold_block_blasting");
++    private static final NamespacedKey RAW_IRON_BLOCK_FURNACE = new NamespacedKey("graphite", "raw_iron_block_furnace");
++    private static final NamespacedKey RAW_IRON_BLOCK_BLASTING = new NamespacedKey("graphite", "raw_iron_block_blasting");
++
++    static {
++        RECIPES.put(RAW_COPPER_BLOCK_FURNACE, new FurnaceRecipe(RAW_COPPER_BLOCK_FURNACE, new ItemStack(Material.COPPER_INGOT, 9), Material.RAW_COPPER_BLOCK,
++                (float) GlobalConfiguration.get().recipes.rawOreBlockSmelting.rawCopper.furnaceExperience,
++                GlobalConfiguration.get().recipes.rawOreBlockSmelting.rawCopper.furnaceCookTime));
++        RECIPES.put(RAW_COPPER_BLOCK_BLASTING, new BlastingRecipe(RAW_COPPER_BLOCK_BLASTING, new ItemStack(Material.COPPER_INGOT, 9), Material.RAW_COPPER_BLOCK,
++                (float) GlobalConfiguration.get().recipes.rawOreBlockSmelting.rawCopper.blastingExperience,
++                GlobalConfiguration.get().recipes.rawOreBlockSmelting.rawCopper.blastingCookTime));
++
++        RECIPES.put(RAW_GOLD_BLOCK_FURNACE, new FurnaceRecipe(RAW_GOLD_BLOCK_FURNACE, new ItemStack(Material.GOLD_INGOT, 9), Material.RAW_GOLD_BLOCK,
++                (float) GlobalConfiguration.get().recipes.rawOreBlockSmelting.rawGold.furnaceExperience,
++                GlobalConfiguration.get().recipes.rawOreBlockSmelting.rawGold.furnaceCookTime));
++        RECIPES.put(RAW_GOLD_BLOCK_BLASTING, new BlastingRecipe(RAW_GOLD_BLOCK_BLASTING, new ItemStack(Material.GOLD_INGOT, 9), Material.RAW_GOLD_BLOCK,
++                (float) GlobalConfiguration.get().recipes.rawOreBlockSmelting.rawGold.blastingExperience,
++                GlobalConfiguration.get().recipes.rawOreBlockSmelting.rawGold.blastingCookTime));
++
++        RECIPES.put(RAW_IRON_BLOCK_FURNACE, new FurnaceRecipe(RAW_IRON_BLOCK_FURNACE, new ItemStack(Material.IRON_INGOT, 9), Material.RAW_IRON_BLOCK,
++                (float) GlobalConfiguration.get().recipes.rawOreBlockSmelting.rawIron.furnaceExperience,
++                GlobalConfiguration.get().recipes.rawOreBlockSmelting.rawIron.furnaceCookTime));
++        RECIPES.put(RAW_IRON_BLOCK_BLASTING, new BlastingRecipe(RAW_IRON_BLOCK_BLASTING, new ItemStack(Material.IRON_INGOT, 9), Material.RAW_IRON_BLOCK,
++                (float) GlobalConfiguration.get().recipes.rawOreBlockSmelting.rawIron.blastingExperience,
++                GlobalConfiguration.get().recipes.rawOreBlockSmelting.rawIron.blastingCookTime));
++    }
++
++    public static void registerRecipes() {
++        RECIPES.forEach((key, recipe) -> {
++            if (Bukkit.getRecipe(key) != null) Bukkit.removeRecipe(key);
++
++            Bukkit.addRecipe(recipe);
++        });
++    }
++
++}
+diff --git a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
+index 50a92f0160ae778085039c9c3468fd3bb9416492..006498d4ecf8d32bdbeaa377e5dc22e7f9914bae 100644
+--- a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
++++ b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
+@@ -386,6 +386,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
+             if (gg.pufferfish.pufferfish.PufferfishConfig.enableAsyncMobSpawning) mobSpawnExecutor.start(); // Pufferfish
+             org.purpurmc.purpur.task.BossBarTask.startAll(); // Purpur
+             org.purpurmc.purpur.task.BeehiveTask.instance().register(); // Purpur
++            dev.graphitemc.graphite.recipe.GraphiteRecipes.registerRecipes(); // Graphite
+             return true;
+         }
+     }
+diff --git a/src/main/java/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java b/src/main/java/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
+index 997d0fab71eacc6466ffe3bc8f6349e5813d6d49..a26c1556c7d5995c424f0719379b047e323e6b45 100644
+--- a/src/main/java/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
++++ b/src/main/java/net/minecraft/world/level/block/entity/AbstractFurnaceBlockEntity.java
+@@ -374,7 +374,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
+ 
+             int i = blockEntity.getMaxStackSize();
+ 
+-            if (!blockEntity.isLit() && AbstractFurnaceBlockEntity.canBurn(world.registryAccess(), irecipe, blockEntity.items, i)) {
++            if (!blockEntity.isLit() && AbstractFurnaceBlockEntity.canBurn(world.registryAccess(), irecipe, blockEntity.items, i, blockEntity)) {
+                 // CraftBukkit start
+                 CraftItemStack fuel = CraftItemStack.asCraftMirror(itemstack);
+ 
+@@ -403,7 +403,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
+                 }
+             }
+ 
+-            if (blockEntity.isLit() && AbstractFurnaceBlockEntity.canBurn(world.registryAccess(), irecipe, blockEntity.items, i)) {
++            if (blockEntity.isLit() && AbstractFurnaceBlockEntity.canBurn(world.registryAccess(), irecipe, blockEntity.items, i, blockEntity)) {
+                 // CraftBukkit start
+                 if (irecipe != null && blockEntity.cookingProgress == 0) {
+                     CraftItemStack source = CraftItemStack.asCraftMirror(blockEntity.items.get(0));
+@@ -444,10 +444,10 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
+         if (usedLavaFromUnderneath) blockEntity.items.set(1, ItemStack.EMPTY); // Purpur
+     }
+ 
+-    private static boolean canBurn(RegistryAccess registryManager, @Nullable Recipe<?> recipe, NonNullList<ItemStack> slots, int count) {
++    private static boolean canBurn(RegistryAccess registryManager, @Nullable Recipe<?> recipe, NonNullList<ItemStack> slots, int count, AbstractFurnaceBlockEntity blockEntity) { // Graphite - Pass AbstractFurnaceBlockEntity
+         if (!((ItemStack) slots.get(0)).isEmpty() && recipe != null) {
+             ItemStack itemstack = recipe.getResultItem(registryManager);
+-
++            if (!AbstractFurnaceBlockEntity.canBurnGraphite((CookingRecipe<?>) recipe.toBukkitRecipe(), blockEntity)) return false; // Graphite - Smelt Raw Ore Blocks
+             if (itemstack.isEmpty()) {
+                 return false;
+             } else {
+@@ -461,7 +461,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
+     }
+ 
+     private static boolean burn(Level world, BlockPos blockposition, RegistryAccess iregistrycustom, @Nullable Recipe<?> irecipe, NonNullList<ItemStack> nonnulllist, int i) { // CraftBukkit
+-        if (irecipe != null && AbstractFurnaceBlockEntity.canBurn(iregistrycustom, irecipe, nonnulllist, i)) {
++        if (irecipe != null && AbstractFurnaceBlockEntity.canBurn(iregistrycustom, irecipe, nonnulllist, i, (AbstractFurnaceBlockEntity) world.getBlockEntity(blockposition))) { // Graphite - Raw Ore Block Smelting
+             ItemStack itemstack = (ItemStack) nonnulllist.get(0);
+             ItemStack itemstack1 = irecipe.getResultItem(iregistrycustom);
+             ItemStack itemstack2 = (ItemStack) nonnulllist.get(2);
+@@ -714,4 +714,32 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
+         // Paper end
+ 
+     }
++    // Graphite start - Smelt Raw Ore Blocks
++    private static boolean canBurnGraphite(CookingRecipe<?> cookingRecipe, AbstractFurnaceBlockEntity blockEntity) {
++        if (!"graphite".equalsIgnoreCase(cookingRecipe.getKey().getNamespace())) return true;
++
++        final ItemStack inputItem = blockEntity.items.get(0);
++        if (blockEntity instanceof BlastFurnaceBlockEntity) {
++            if (inputItem.is(Items.RAW_COPPER_BLOCK)) {
++                return blockEntity.level.graphiteConfiguration().misc.recipes.rawOreBlockSmelting.rawCopper.allowBlasting;
++            } else if (inputItem.is(Items.RAW_GOLD_BLOCK)) {
++                return blockEntity.level.graphiteConfiguration().misc.recipes.rawOreBlockSmelting.rawGold.allowBlasting;
++            } else if (inputItem.is(Items.RAW_IRON_BLOCK)) {
++                return blockEntity.level.graphiteConfiguration().misc.recipes.rawOreBlockSmelting.rawIron.allowBlasting;
++            }
++        }
++
++        if (blockEntity instanceof FurnaceBlockEntity) {
++            if (inputItem.is(Items.RAW_COPPER_BLOCK)) {
++                return blockEntity.level.graphiteConfiguration().misc.recipes.rawOreBlockSmelting.rawCopper.allowFurnace;
++            } else if (inputItem.is(Items.RAW_GOLD_BLOCK)) {
++                return blockEntity.level.graphiteConfiguration().misc.recipes.rawOreBlockSmelting.rawGold.allowFurnace;
++            } else if (inputItem.is(Items.RAW_IRON_BLOCK)) {
++                return blockEntity.level.graphiteConfiguration().misc.recipes.rawOreBlockSmelting.rawIron.allowFurnace;
++            }
++        }
++
++        return false;
++    }
++    // Graphite end - Smelt Raw Ore Blocks
+ }
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index 905f452b2389527bf9822f446badd622ae18deb8..228588afa2aeb0d24c237bbc3adf5155ec33090d 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -1102,6 +1102,7 @@ public final class CraftServer implements Server {
+         org.spigotmc.SpigotConfig.registerCommands(); // Spigot
+         io.papermc.paper.command.PaperCommands.registerCommands(this.console); // Paper
+         dev.graphitemc.graphite.command.GraphiteCommands.registerCommands(this.console); // Graphite
++        dev.graphitemc.graphite.recipe.GraphiteRecipes.registerRecipes(); // Graphite
+         org.purpurmc.purpur.PurpurConfig.registerCommands(); // Purpur
+         this.overrideAllCommandBlockCommands = this.commandsConfiguration.getStringList("command-block-overrides").contains("*");
+         this.ignoreVanillaPermissions = this.commandsConfiguration.getBoolean("ignore-vanilla-permissions");
