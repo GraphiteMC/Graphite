@@ -18,28 +18,34 @@ index d65705e77fab5e8f2e75f304b8bcba77c786c11e..bbf2465be21ac530018267047c96d330
      }
  
 diff --git a/src/main/java/net/minecraft/world/entity/animal/Wolf.java b/src/main/java/net/minecraft/world/entity/animal/Wolf.java
-index 64bceae4d06b35fcbecb0daca2496ba30e39d995..9d8e90c15723b1ea9b3efed886afa9dd643b89d8 100644
+index 64bceae4d06b35fcbecb0daca2496ba30e39d995..12c55b595ac8edc4fe078d7e8ebf26937771f534 100644
 --- a/src/main/java/net/minecraft/world/entity/animal/Wolf.java
 +++ b/src/main/java/net/minecraft/world/entity/animal/Wolf.java
 @@ -651,17 +651,20 @@ public class Wolf extends TamableAnimal implements NeutralMob {
  
      @Override
      public boolean canMate(Animal other) {
-+        // Graphite start - Fix MC-93018
-         if (other == this) {
-             return false;
+-        if (other == this) {
+-            return false;
 -        } else if (!this.isTame()) {
 -            return false;
-+        /*} else if (!this.isTame()) {
-+            return false;*/
-         } else if (!(other instanceof Wolf)) {
-             return false;
-         } else {
-             Wolf entitywolf = (Wolf) other;
+-        } else if (!(other instanceof Wolf)) {
+-            return false;
+-        } else {
+-            Wolf entitywolf = (Wolf) other;
++        // Graphite start - Fix MC-93018
++        if (other == this) return false;
++        if (!(other instanceof Wolf entityWolf)) return false;
  
 -            return !entitywolf.isTame() ? false : (entitywolf.isInSittingPose() ? false : this.isInLove() && entitywolf.isInLove());
-+            if (entitywolf.isInSittingPose()) return false;
-+            return entitywolf.isInLove() && this.isInLove();
++        if (this.level().graphiteConfiguration().misc.fixMC93018) {
++            return entityWolf.isInSittingPose() ? false : this.isInLove() && entityWolf.isInLove();
++        } else {
++            if (!this.isTame()) {
++                return false;
++            } else {
++                return !entityWolf.isTame() ? false : (entityWolf.isInSittingPose() ? false : this.isInLove() && entityWolf.isInLove());
++            }
          }
 +        // Graphite end - Fix MC-93018
      }
