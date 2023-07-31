@@ -1,0 +1,60 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrFishCakes <FinlayOxby@outlook.com>
+Date: Sun, 30 Jul 2023 21:57:28 +0100
+Subject: [PATCH] Player Skin API
+
+Ability to change a player's skin easily through new API
+
+diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
+index 74a9e27b8d3147876483743e1107632e332b0571..4e76b9e8ac9bd23b7954b07f3ba6e061f21896e6 100644
+--- a/src/main/java/org/bukkit/entity/Player.java
++++ b/src/main/java/org/bukkit/entity/Player.java
+@@ -1018,8 +1018,8 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+      * they have seen it before because this method was called.
+      * Note this method does not make the player invulnerable, which is normally expected when viewing credits.
+      *
+-     * @see #hasSeenWinScreen() 
+-     * @see #setHasSeenWinScreen(boolean) 
++     * @see #hasSeenWinScreen()
++     * @see #setHasSeenWinScreen(boolean)
+      * @see <a href="https://minecraft.fandom.com/wiki/End_Poem#Technical_details">https://minecraft.fandom.com/wiki/End_Poem#Technical_details</a>
+      */
+     public void showWinScreen();
+@@ -2638,7 +2638,7 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+      * @param simulationDistance the player's new simulation distance
+      */
+     public void setSimulationDistance(int simulationDistance);
+-    
++
+     /**
+      * Gets the no-ticking view distance for this player.
+      * <p>
+@@ -3314,4 +3314,28 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+         sendDeathScreen(message);
+     }
+     // Purpur end
++    // Graphite start - Change Player Skin
++
++    /**
++     * Set the skin for this player using a name. This method will contact Mojang API servers when called if the skin data is not cached
++     *
++     * @param name Minecraft profile name
++     */
++    void setPlayerSkin(@NotNull String name);
++
++    /**
++     * Set the skin for this player using a UUID. This method will contact Mojang API servers when called if the skin data is not cached
++     *
++     * @param uniqueId Minecraft profile UUID
++     */
++    void setPlayerSkin(@NotNull java.util.UUID uniqueId);
++
++    /**
++     * Set the skin for this player using a texture and signature
++     *
++     * @param texture Texture to use
++     * @param signature Signature to use
++     */
++    void setPlayerSkin(@NotNull String texture, @NotNull String signature);
++    // Graphite end - Change Player Skin
+ }
