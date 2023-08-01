@@ -13,6 +13,8 @@ jobs:
     if: "!startsWith(github.event.commits[0].message, '[CI-SKIP]')"
 
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v3
       - uses: gradle/wrapper-validation-action@v1
