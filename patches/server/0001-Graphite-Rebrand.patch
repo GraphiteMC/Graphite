@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Encode42 <me@encode42.dev>
 Date: Thu, 16 Sep 2021 20:39:45 -0400
-Subject: [PATCH] Rebrand
+Subject: [PATCH] Graphite Rebrand
 
 
 diff --git a/build.gradle.kts b/build.gradle.kts
@@ -101,7 +101,7 @@ index 81aee45085a29ceb8e36d7948432e2ca688978c0..7fd37983efee051b7e8dc07618950afa
      private final String bukkitVersion = Versioning.getBukkitVersion();
      private final Logger logger = Logger.getLogger("Minecraft");
 diff --git a/src/main/java/org/bukkit/craftbukkit/util/Versioning.java b/src/main/java/org/bukkit/craftbukkit/util/Versioning.java
-index 99597258e8e88cd9e2c901c4ac3ff7faeeabee2b..86a1555be54da450a214880b38c21c62150f6d1c 100644
+index 99597258e8e88cd9e2c901c4ac3ff7faeeabee2b..65dc12643d7533cbfa4813ce38baf353a9c36170 100644
 --- a/src/main/java/org/bukkit/craftbukkit/util/Versioning.java
 +++ b/src/main/java/org/bukkit/craftbukkit/util/Versioning.java
 @@ -11,7 +11,7 @@ public final class Versioning {
@@ -109,7 +109,7 @@ index 99597258e8e88cd9e2c901c4ac3ff7faeeabee2b..86a1555be54da450a214880b38c21c62
          String result = "Unknown-Version";
  
 -        InputStream stream = Bukkit.class.getClassLoader().getResourceAsStream("META-INF/maven/org.purpurmc.purpur/purpur-api/pom.properties"); // Pufferfish // Purpur
-+        InputStream stream = Bukkit.class.getClassLoader().getResourceAsStream("META-INF/maven/dev.graphitemc.graphite/graphite-api/pom.properties"); // Pufferfish // Purpur // Graphite
++        InputStream stream = Bukkit.class.getClassLoader().getResourceAsStream("META-INF/maven/org.graphitemc.graphite/graphite-api/pom.properties"); // Pufferfish // Purpur // Graphite
          Properties properties = new Properties();
  
          if (stream != null) {

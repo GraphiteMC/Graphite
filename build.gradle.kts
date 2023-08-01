@@ -85,7 +85,7 @@ paperweight {
 }
 
 tasks.generateDevelopmentBundle {
-    apiCoordinates.set("dev.graphitemc.graphite:graphite-api")
+    apiCoordinates.set("org.graphitemc.graphite:graphite-api")
     mojangApiCoordinates.set("io.papermc.paper:paper-mojangapi")
     libraryRepositories.set(
         listOf(
@@ -99,8 +99,8 @@ tasks.generateDevelopmentBundle {
 allprojects {
     publishing {
         repositories {
-            maven("https://repo.purpurmc.org/snapshots") {
-                name = "graphite"
+            maven("https://repo.graphitemc.org/releases") {
+                name = "graphitemc"
                 credentials(PasswordCredentials::class)
             }
         }
@@ -121,7 +121,7 @@ tasks.register("printMinecraftVersion") {
     }
 }
 
-tasks.register("printTentaclesVersion") {
+tasks.register("printGraphiteVersion") {
     doLast {
         println(project.version)
     }

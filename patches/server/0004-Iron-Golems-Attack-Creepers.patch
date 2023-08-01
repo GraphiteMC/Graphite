@@ -5,29 +5,6 @@ Subject: [PATCH] Iron Golems Attack Creepers
 
 Iron Golems can now attack Creepers
 
-diff --git a/src/main/java/dev/graphitemc/graphite/configuration/LevelConfigurations.java b/src/main/java/dev/graphitemc/graphite/configuration/LevelConfigurations.java
-index eafc72ea2e80c627bfe3957f72502cbd1cb5da5c..4b285cfd9aab4fbac044f2922ba0a4a5f701a731 100644
---- a/src/main/java/dev/graphitemc/graphite/configuration/LevelConfigurations.java
-+++ b/src/main/java/dev/graphitemc/graphite/configuration/LevelConfigurations.java
-@@ -22,4 +22,18 @@ public class LevelConfigurations extends ConfigurationPart {
-     @Setting(Configuration.VERSION_FIELD)
-     public int version = CURRENT_VERSION;
- 
-+    public MobOptions mobSettings;
-+
-+    public class MobOptions extends ConfigurationPart {
-+
-+        public IronGolemOptions ironGolemOptions;
-+
-+        public class IronGolemOptions extends ConfigurationPart {
-+
-+            public boolean attackCreepers = false;
-+
-+        }
-+
-+    }
-+
- }
 diff --git a/src/main/java/net/minecraft/world/entity/animal/IronGolem.java b/src/main/java/net/minecraft/world/entity/animal/IronGolem.java
 index 64aba511e615983988cdb6a0fd45b7d9d4f2f16d..f38e4fdb7d1ce53856f574005d38a1f412300950 100644
 --- a/src/main/java/net/minecraft/world/entity/animal/IronGolem.java
@@ -81,3 +58,26 @@ index 64aba511e615983988cdb6a0fd45b7d9d4f2f16d..f38e4fdb7d1ce53856f574005d38a1f4
      }
  
      @Override
+diff --git a/src/main/java/org/graphitemc/graphite/configuration/LevelConfigurations.java b/src/main/java/org/graphitemc/graphite/configuration/LevelConfigurations.java
+index 8fc66aa982820b3179e1216f3176f6e8d1079a16..61b5700455933afe0ac3d5c9431bc2e978a79337 100644
+--- a/src/main/java/org/graphitemc/graphite/configuration/LevelConfigurations.java
++++ b/src/main/java/org/graphitemc/graphite/configuration/LevelConfigurations.java
+@@ -22,4 +22,18 @@ public class LevelConfigurations extends ConfigurationPart {
+     @Setting(Configuration.VERSION_FIELD)
+     public int version = CURRENT_VERSION;
+ 
++    public MobOptions mobSettings;
++
++    public class MobOptions extends ConfigurationPart {
++
++        public IronGolemOptions ironGolemOptions;
++
++        public class IronGolemOptions extends ConfigurationPart {
++
++            public boolean attackCreepers = false;
++
++        }
++
++    }
++
+ }

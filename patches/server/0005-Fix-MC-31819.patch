@@ -5,10 +5,22 @@ Subject: [PATCH] Fix MC-31819
 
 See: https://bugs.mojang.com/browse/MC-31819
 
-diff --git a/src/main/java/dev/graphitemc/graphite/configuration/LevelConfigurations.java b/src/main/java/dev/graphitemc/graphite/configuration/LevelConfigurations.java
-index 4b285cfd9aab4fbac044f2922ba0a4a5f701a731..d65705e77fab5e8f2e75f304b8bcba77c786c11e 100644
---- a/src/main/java/dev/graphitemc/graphite/configuration/LevelConfigurations.java
-+++ b/src/main/java/dev/graphitemc/graphite/configuration/LevelConfigurations.java
+diff --git a/src/main/java/net/minecraft/world/entity/player/Player.java b/src/main/java/net/minecraft/world/entity/player/Player.java
+index d00035e31cf4773a418d1cc6a6018d08e6b558f0..528feae2ca2d30149f46b8307cce9990644f9aa9 100644
+--- a/src/main/java/net/minecraft/world/entity/player/Player.java
++++ b/src/main/java/net/minecraft/world/entity/player/Player.java
+@@ -1968,6 +1968,7 @@ public abstract class Player extends LivingEntity {
+     }
+ 
+     public void causeFoodExhaustion(float f, EntityExhaustionEvent.ExhaustionReason reason) {
++        if (this.level().graphiteConfiguration().misc.fixMC31819 && this.level().getDifficulty() == Difficulty.PEACEFUL) return; // Graphite - Fix MC-31819
+         // CraftBukkit end
+         if (!this.abilities.invulnerable) {
+             if (!this.level().isClientSide) {
+diff --git a/src/main/java/org/graphitemc/graphite/configuration/LevelConfigurations.java b/src/main/java/org/graphitemc/graphite/configuration/LevelConfigurations.java
+index 61b5700455933afe0ac3d5c9431bc2e978a79337..66a13e262bf1b055b6602a7ce24bcc6dab40c470 100644
+--- a/src/main/java/org/graphitemc/graphite/configuration/LevelConfigurations.java
++++ b/src/main/java/org/graphitemc/graphite/configuration/LevelConfigurations.java
 @@ -36,4 +36,12 @@ public class LevelConfigurations extends ConfigurationPart {
  
      }
@@ -22,15 +34,3 @@ index 4b285cfd9aab4fbac044f2922ba0a4a5f701a731..d65705e77fab5e8f2e75f304b8bcba77
 +    }
 +
  }
-diff --git a/src/main/java/net/minecraft/world/entity/player/Player.java b/src/main/java/net/minecraft/world/entity/player/Player.java
-index d00035e31cf4773a418d1cc6a6018d08e6b558f0..528feae2ca2d30149f46b8307cce9990644f9aa9 100644
---- a/src/main/java/net/minecraft/world/entity/player/Player.java
-+++ b/src/main/java/net/minecraft/world/entity/player/Player.java
-@@ -1968,6 +1968,7 @@ public abstract class Player extends LivingEntity {
-     }
- 
-     public void causeFoodExhaustion(float f, EntityExhaustionEvent.ExhaustionReason reason) {
-+        if (this.level().graphiteConfiguration().misc.fixMC31819 && this.level().getDifficulty() == Difficulty.PEACEFUL) return; // Graphite - Fix MC-31819
-         // CraftBukkit end
-         if (!this.abilities.invulnerable) {
-             if (!this.level().isClientSide) {

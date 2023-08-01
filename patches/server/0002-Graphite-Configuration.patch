@@ -4,13 +4,365 @@ Date: Tue, 18 Jul 2023 15:04:44 +0100
 Subject: [PATCH] Graphite Configuration
 
 
-diff --git a/src/main/java/dev/graphitemc/graphite/command/GraphiteCommand.java b/src/main/java/dev/graphitemc/graphite/command/GraphiteCommand.java
+diff --git a/src/main/java/io/papermc/paper/configuration/ConfigurationPart.java b/src/main/java/io/papermc/paper/configuration/ConfigurationPart.java
+index 7a4a7a654fe2516ed894a68f2657344df9d70f4c..f8564af782488f67b10f1d3e51679ea7a293ab27 100644
+--- a/src/main/java/io/papermc/paper/configuration/ConfigurationPart.java
++++ b/src/main/java/io/papermc/paper/configuration/ConfigurationPart.java
+@@ -1,6 +1,6 @@
+ package io.papermc.paper.configuration;
+ 
+-abstract class ConfigurationPart {
++public abstract class ConfigurationPart { // Graphite - Package -> public
+ 
+     public static abstract class Post extends ConfigurationPart {
+ 
+diff --git a/src/main/java/io/papermc/paper/configuration/Configurations.java b/src/main/java/io/papermc/paper/configuration/Configurations.java
+index 9ef6712c70fcd8912a79f3f61e351aac09572cf3..35a0936fcf07af797e479ef7d1204b11106e863a 100644
+--- a/src/main/java/io/papermc/paper/configuration/Configurations.java
++++ b/src/main/java/io/papermc/paper/configuration/Configurations.java
+@@ -88,7 +88,7 @@ public abstract class Configurations<G, W> {
+         };
+     }
+ 
+-    static <T> CheckedFunction<ConfigurationNode, T, SerializationException> reloader(Class<T> type, T instance) {
++    public static <T> CheckedFunction<ConfigurationNode, T, SerializationException> reloader(Class<T> type, T instance) { // Graphite - Package -> public
+         return node -> {
+             ObjectMapper.Factory factory = (ObjectMapper.Factory) Objects.requireNonNull(node.options().serializers().get(type));
+             ObjectMapper.Mutable<T> mutable = (ObjectMapper.Mutable<T>) factory.get(type);
+@@ -148,7 +148,7 @@ public abstract class Configurations<G, W> {
+         final YamlConfigurationLoader loader = result.loader();
+         final ConfigurationNode node = loader.load();
+         if (result.isNewFile()) { // add version to new files
+-            node.node(Configuration.VERSION_FIELD).raw(WorldConfiguration.CURRENT_VERSION);
++            node.node(Configuration.VERSION_FIELD).raw(getWorldConfigurationCurrentVersion()); // Graphite
+         }
+         this.applyWorldConfigTransformations(contextMap, node);
+         final W instance = node.require(this.worldConfigClass);
+@@ -207,7 +207,7 @@ public abstract class Configurations<G, W> {
+             .build();
+         final ConfigurationNode worldNode = worldLoader.load();
+         if (newFile) { // set the version field if new file
+-            worldNode.node(Configuration.VERSION_FIELD).set(WorldConfiguration.CURRENT_VERSION);
++            worldNode.node(Configuration.VERSION_FIELD).set(getWorldConfigurationCurrentVersion()); // Graphite
+         }
+         this.applyWorldConfigTransformations(contextMap, worldNode);
+         this.applyDefaultsAwareWorldConfigTransformations(contextMap, worldNode, defaultsNode);
+@@ -308,4 +308,18 @@ public abstract class Configurations<G, W> {
+             return "ContextKey{" + this.name + "}";
+         }
+     }
++    // Graphite start
++    @Deprecated
++    public org.bukkit.configuration.file.YamlConfiguration createLegacyObject(final net.minecraft.server.MinecraftServer server) {
++        org.bukkit.configuration.file.YamlConfiguration global = org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(this.globalFolder.resolve(this.globalConfigFileName).toFile());
++        org.bukkit.configuration.ConfigurationSection worlds = global.createSection("__________WORLDS__________");
++        worlds.set("__defaults__", org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(this.globalFolder.resolve(this.defaultWorldConfigFileName).toFile()));
++        for (ServerLevel level : server.getAllLevels()) {
++            worlds.set(level.getWorld().getName(), org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(getWorldConfigFile(level).toFile()));
++        }
++        return global;
++    }
++
++    protected abstract int getWorldConfigurationCurrentVersion();
++    // Graphite end
+ }
+diff --git a/src/main/java/io/papermc/paper/configuration/InnerClassFieldDiscoverer.java b/src/main/java/io/papermc/paper/configuration/InnerClassFieldDiscoverer.java
+index a0aa1f1a7adf986d500a2135aa42e138aa3c4f08..b9fe1410a91231daf5c0e66a8628f69ed6a19efe 100644
+--- a/src/main/java/io/papermc/paper/configuration/InnerClassFieldDiscoverer.java
++++ b/src/main/java/io/papermc/paper/configuration/InnerClassFieldDiscoverer.java
+@@ -17,7 +17,7 @@ import java.util.Map;
+ 
+ import static io.leangen.geantyref.GenericTypeReflector.erase;
+ 
+-final class InnerClassFieldDiscoverer implements FieldDiscoverer<Map<Field, Object>> {
++public final class InnerClassFieldDiscoverer implements FieldDiscoverer<Map<Field, Object>> { // Graphite - Package -> public
+ 
+     private final Map<Class<?>, Object> instanceMap = new HashMap<>();
+     private final Map<Class<?>, Object> overrides;
+@@ -136,7 +136,16 @@ final class InnerClassFieldDiscoverer implements FieldDiscoverer<Map<Field, Obje
+         return new InnerClassFieldDiscoverer(overrides);
+     }
+ 
+-    static FieldDiscoverer<?> globalConfig() {
++    public static FieldDiscoverer<?> globalConfig() { // Graphite - Package -> public
+         return new InnerClassFieldDiscoverer(Collections.emptyMap());
+     }
++    // Graphite start
++    public static FieldDiscoverer<?> graphiteLevelConfiguration(Configurations.ContextMap contextMap) {
++        final Map<Class<?>, Object> overrides = Map.of(
++                org.graphitemc.graphite.configuration.LevelConfigurations.class,
++                new org.graphitemc.graphite.configuration.LevelConfigurations(contextMap.require(Configurations.WORLD_KEY)));
++
++        return new InnerClassFieldDiscoverer(overrides);
++    }
++    // Graphite end
+ }
+diff --git a/src/main/java/io/papermc/paper/configuration/PaperConfigurations.java b/src/main/java/io/papermc/paper/configuration/PaperConfigurations.java
+index ad2177cdbc61a6f41c7e2ed81af262d4ffe7d861..12558edda8f66bca67b71508da02f238ca312247 100644
+--- a/src/main/java/io/papermc/paper/configuration/PaperConfigurations.java
++++ b/src/main/java/io/papermc/paper/configuration/PaperConfigurations.java
+@@ -134,7 +134,7 @@ public class PaperConfigurations extends Configurations<GlobalConfiguration, Wor
+             SpigotConfig.readConfig(SpigotWorldConfig.class, this);
+         }
+     });
+-    static final ContextKey<Supplier<SpigotWorldConfig>> SPIGOT_WORLD_CONFIG_CONTEXT_KEY = new ContextKey<>(new TypeToken<Supplier<SpigotWorldConfig>>() {}, "spigot world config");
++    public static final ContextKey<Supplier<SpigotWorldConfig>> SPIGOT_WORLD_CONFIG_CONTEXT_KEY = new ContextKey<>(new TypeToken<Supplier<SpigotWorldConfig>>() {}, "spigot world config"); // Graphite - Package -> public
+ 
+ 
+     public PaperConfigurations(final Path globalFolder) {
+@@ -298,7 +298,7 @@ public class PaperConfigurations extends Configurations<GlobalConfiguration, Wor
+         }
+     }
+ 
+-    private static ContextMap createWorldContextMap(ServerLevel level) {
++    public static ContextMap createWorldContextMap(ServerLevel level) { // Graphite - Private -> public
+         return createWorldContextMap(level.convertable.levelDirectory.path(), level.serverLevelData.getLevelName(), level.dimension().location(), level.spigotConfig);
+     }
+ 
+@@ -399,6 +399,7 @@ public class PaperConfigurations extends Configurations<GlobalConfiguration, Wor
+         return Files.exists(legacyConfig) && Files.isRegularFile(legacyConfig);
+     }
+ 
++    /* // Graphite start
+     @Deprecated
+     public YamlConfiguration createLegacyObject(final MinecraftServer server) {
+         YamlConfiguration global = YamlConfiguration.loadConfiguration(this.globalFolder.resolve(this.globalConfigFileName).toFile());
+@@ -408,7 +409,7 @@ public class PaperConfigurations extends Configurations<GlobalConfiguration, Wor
+             worlds.set(level.getWorld().getName(), YamlConfiguration.loadConfiguration(getWorldConfigFile(level).toFile()));
+         }
+         return global;
+-    }
++    } */ // Graphite end
+ 
+     @Deprecated
+     public static YamlConfiguration loadLegacyConfigFile(File configFile) throws Exception {
+@@ -432,9 +433,15 @@ public class PaperConfigurations extends Configurations<GlobalConfiguration, Wor
+     }
+ 
+     // Symlinks are not correctly checked in createDirectories
+-    static void createDirectoriesSymlinkAware(Path path) throws IOException {
++    public static void createDirectoriesSymlinkAware(Path path) throws IOException { // Graphite - Package -> public
+         if (!Files.isDirectory(path)) {
+             Files.createDirectories(path);
+         }
+     }
++    // Graphite start
++    @Override
++    protected int getWorldConfigurationCurrentVersion() {
++        return WorldConfiguration.CURRENT_VERSION;
++    }
++    // Graphite end
+ }
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index 6afdf37406d7dae04a7fec94e0c39d5136521730..284f1e8c62eeb58b4265ed130c9c8aaa74fa461e 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -307,6 +307,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+     public final double[] recentTps = new double[ 4 ]; // Purpur
+     // Spigot end
+     public final io.papermc.paper.configuration.PaperConfigurations paperConfigurations;
++    public final org.graphitemc.graphite.configuration.GraphiteConfigurations graphiteConfigurations; // Graphite
+     public static long currentTickLong = 0L; // Paper
+     public boolean lagging = false; // Purpur
+     protected boolean upnp = false; // Purpur
+@@ -413,6 +414,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+         // Paper end
+         Runtime.getRuntime().addShutdownHook(new org.bukkit.craftbukkit.util.ServerShutdownThread(this));
+         this.paperConfigurations = services.paperConfigurations(); // Paper
++        this.graphiteConfigurations = services.graphiteConfigurations(); // Graphite
+     }
+     // CraftBukkit end
+ 
+diff --git a/src/main/java/net/minecraft/server/Services.java b/src/main/java/net/minecraft/server/Services.java
+index a9b2c8cd4dcd3f884e4306bebee9334d3848fce5..2345699a770c091a3455ddbc022fc63ed8b9f6d1 100644
+--- a/src/main/java/net/minecraft/server/Services.java
++++ b/src/main/java/net/minecraft/server/Services.java
+@@ -11,10 +11,10 @@ import net.minecraft.server.players.GameProfileCache;
+ import net.minecraft.util.SignatureValidator;
+ 
+ // Paper start
+-public record Services(MinecraftSessionService sessionService, ServicesKeySet servicesKeySet, GameProfileRepository profileRepository, GameProfileCache profileCache, @javax.annotation.Nullable io.papermc.paper.configuration.PaperConfigurations paperConfigurations) {
++public record Services(MinecraftSessionService sessionService, ServicesKeySet servicesKeySet, GameProfileRepository profileRepository, GameProfileCache profileCache, @javax.annotation.Nullable io.papermc.paper.configuration.PaperConfigurations paperConfigurations, @javax.annotation.Nullable org.graphitemc.graphite.configuration.GraphiteConfigurations graphiteConfigurations) {
+ 
+     public Services(MinecraftSessionService sessionService, ServicesKeySet servicesKeySet, GameProfileRepository profileRepository, GameProfileCache profileCache) {
+-        this(sessionService, servicesKeySet, profileRepository, profileCache, null);
++        this(sessionService, servicesKeySet, profileRepository, profileCache, null, null);
+     }
+ 
+     @Override
+@@ -22,6 +22,12 @@ public record Services(MinecraftSessionService sessionService, ServicesKeySet se
+         return java.util.Objects.requireNonNull(this.paperConfigurations);
+     }
+     // Paper end
++    // Graphite start
++    @Override
++    public org.graphitemc.graphite.configuration.GraphiteConfigurations graphiteConfigurations() {
++        return java.util.Objects.requireNonNull(this.graphiteConfigurations);
++    }
++    // Graphite end
+     public static final String USERID_CACHE_FILE = "usercache.json"; // Paper - private -> public
+ 
+     public static Services create(YggdrasilAuthenticationService authenticationService, File rootDirectory, File userCacheFile, joptsimple.OptionSet optionSet) throws Exception { // Paper
+@@ -32,7 +38,11 @@ public record Services(MinecraftSessionService sessionService, ServicesKeySet se
+         final java.nio.file.Path legacyConfigPath = ((File) optionSet.valueOf("paper-settings")).toPath();
+         final java.nio.file.Path configDirPath = ((File) optionSet.valueOf("paper-settings-directory")).toPath();
+         io.papermc.paper.configuration.PaperConfigurations paperConfigurations = io.papermc.paper.configuration.PaperConfigurations.setup(legacyConfigPath, configDirPath, rootDirectory.toPath(), (File) optionSet.valueOf("spigot-settings"));
+-        return new Services(minecraftSessionService, authenticationService.getServicesKeySet(), gameProfileRepository, gameProfileCache, paperConfigurations);
++        // Graphite start
++        final java.nio.file.Path graphiteConfigurationDirPath = ((File) optionSet.valueOf("graphite-settings-directory")).toPath();
++        org.graphitemc.graphite.configuration.GraphiteConfigurations graphiteConfigurations = org.graphitemc.graphite.configuration.GraphiteConfigurations.setup(graphiteConfigurationDirPath);
++        return new Services(minecraftSessionService, authenticationService.getServicesKeySet(), gameProfileRepository, gameProfileCache, paperConfigurations, graphiteConfigurations);
++        // Graphite end
+         // Paper end
+     }
+ 
+diff --git a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
+index 12124d6fbc0406bb62bd95a0f7bab68afa43377c..d2b20a59fb35c985fe97288b1cbe1d8a6bfc92ba 100644
+--- a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
++++ b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
+@@ -209,6 +209,11 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
+         io.papermc.paper.util.ObfHelper.INSTANCE.getClass(); // Paper - load mappings for stacktrace deobf and etc.
+         paperConfigurations.initializeGlobalConfiguration();
+         paperConfigurations.initializeWorldDefaultsConfiguration();
++        // Graphite start
++        graphiteConfigurations.initializeGlobalConfiguration();
++        graphiteConfigurations.initializeWorldDefaultsConfiguration();
++        // TODO Commands
++        // Graphite end
+         // Paper start - moved up to right after PlayerList creation but before file load/save
+         if (this.convertOldUsers()) {
+             this.getProfileCache().save(false); // Paper
+@@ -218,6 +223,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
+         org.spigotmc.WatchdogThread.doStart(org.spigotmc.SpigotConfig.timeoutTime, org.spigotmc.SpigotConfig.restartOnCrash);
+         thread.start(); // Paper - start console thread after MinecraftServer.console & PaperConfig are initialized
+         io.papermc.paper.command.PaperCommands.registerCommands(this);
++        org.graphitemc.graphite.command.GraphiteCommands.registerCommands(this); // Graphite
+         com.destroystokyo.paper.Metrics.PaperMetrics.startMetrics();
+         // Purpur start
+         try {
+@@ -228,6 +234,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
+         }
+         org.purpurmc.purpur.PurpurConfig.registerCommands();
+         // Purpur end
++        // Graphite start
+         com.destroystokyo.paper.VersionHistoryManager.INSTANCE.getClass(); // load version history now
+         io.papermc.paper.brigadier.PaperBrigadierProviderImpl.INSTANCE.getClass(); // init PaperBrigadierProvider
+         // Paper end
+diff --git a/src/main/java/net/minecraft/server/level/ServerLevel.java b/src/main/java/net/minecraft/server/level/ServerLevel.java
+index 221d1d0e1b4b46de6ebca5faac09bbda875fae17..c6b9451b60f117ef6d6cb5f63d9d5b57db28ea79 100644
+--- a/src/main/java/net/minecraft/server/level/ServerLevel.java
++++ b/src/main/java/net/minecraft/server/level/ServerLevel.java
+@@ -650,7 +650,7 @@ public class ServerLevel extends Level implements WorldGenLevel {
+         // Holder holder = worlddimension.type(); // CraftBukkit - decompile error
+ 
+         // Objects.requireNonNull(minecraftserver); // CraftBukkit - decompile error
+-        super(iworlddataserver, resourcekey, minecraftserver.registryAccess(), worlddimension.type(), minecraftserver::getProfiler, false, flag, i, minecraftserver.getMaxChainedNeighborUpdates(), gen, biomeProvider, env, spigotConfig -> minecraftserver.paperConfigurations.createWorldConfig(io.papermc.paper.configuration.PaperConfigurations.createWorldContextMap(convertable_conversionsession.levelDirectory.path(), iworlddataserver.getLevelName(), resourcekey.location(), spigotConfig)), executor); // Paper - Async-Anti-Xray - Pass executor
++        super(iworlddataserver, resourcekey, minecraftserver.registryAccess(), worlddimension.type(), minecraftserver::getProfiler, false, flag, i, minecraftserver.getMaxChainedNeighborUpdates(), gen, biomeProvider, env, spigotConfig -> minecraftserver.paperConfigurations.createWorldConfig(io.papermc.paper.configuration.PaperConfigurations.createWorldContextMap(convertable_conversionsession.levelDirectory.path(), iworlddataserver.getLevelName(), resourcekey.location(), spigotConfig)), spigotConfig -> minecraftserver.graphiteConfigurations.createWorldConfig(io.papermc.paper.configuration.PaperConfigurations.createWorldContextMap(convertable_conversionsession.levelDirectory.path(), iworlddataserver.getLevelName(), resourcekey.location(), spigotConfig)), executor); // Paper - Async-Anti-Xray - Pass executor // Graphite
+         this.pvpMode = minecraftserver.isPvpAllowed();
+         this.convertable = convertable_conversionsession;
+         this.uuid = WorldUUID.getUUID(convertable_conversionsession.levelDirectory.path().toFile());
+diff --git a/src/main/java/net/minecraft/world/level/Level.java b/src/main/java/net/minecraft/world/level/Level.java
+index bdb32964524cb2a4398b8d3bedfb03b0cb805b6d..d4bc1cfa4f71cc2e4913650fc40894563543d40a 100644
+--- a/src/main/java/net/minecraft/world/level/Level.java
++++ b/src/main/java/net/minecraft/world/level/Level.java
+@@ -328,9 +328,10 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
+     @Override public final int getHeight() { return this.height; }
+     // Pufferfish end
+ 
+-    protected Level(WritableLevelData worlddatamutable, ResourceKey<Level> resourcekey, RegistryAccess iregistrycustom, Holder<DimensionType> holder, Supplier<ProfilerFiller> supplier, boolean flag, boolean flag1, long i, int j, org.bukkit.generator.ChunkGenerator gen, org.bukkit.generator.BiomeProvider biomeProvider, org.bukkit.World.Environment env, java.util.function.Function<org.spigotmc.SpigotWorldConfig, io.papermc.paper.configuration.WorldConfiguration> paperWorldConfigCreator, java.util.concurrent.Executor executor) { // Paper - Async-Anti-Xray - Pass executor
++    protected Level(WritableLevelData worlddatamutable, ResourceKey<Level> resourcekey, RegistryAccess iregistrycustom, Holder<DimensionType> holder, Supplier<ProfilerFiller> supplier, boolean flag, boolean flag1, long i, int j, org.bukkit.generator.ChunkGenerator gen, org.bukkit.generator.BiomeProvider biomeProvider, org.bukkit.World.Environment env, java.util.function.Function<org.spigotmc.SpigotWorldConfig, io.papermc.paper.configuration.WorldConfiguration> paperWorldConfigCreator, java.util.function.Function<org.spigotmc.SpigotWorldConfig, org.graphitemc.graphite.configuration.LevelConfigurations> graphiteWorldConfigCreator, java.util.concurrent.Executor executor) { // Paper - Async-Anti-Xray - Pass executor // Graphite
+         this.spigotConfig = new org.spigotmc.SpigotWorldConfig(((net.minecraft.world.level.storage.PrimaryLevelData) worlddatamutable).getLevelName()); // Spigot
+         this.paperConfig = paperWorldConfigCreator.apply(this.spigotConfig); // Paper
++        this.graphiteConfig = graphiteWorldConfigCreator.apply(this.spigotConfig); // Graphite
+         this.purpurConfig = new org.purpurmc.purpur.PurpurWorldConfig(((net.minecraft.world.level.storage.PrimaryLevelData) worlddatamutable).getLevelName(), env); // Purpur
+         this.playerBreedingCooldowns = this.getNewBreedingCooldownCache(); // Purpur
+         this.generator = gen;
+@@ -1630,4 +1631,11 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
+         return getWorld().getEnvironment() == org.bukkit.World.Environment.THE_END;
+     }
+     // Purpur end
++    // Graphite start
++    private final org.graphitemc.graphite.configuration.LevelConfigurations graphiteConfig;
++
++    public org.graphitemc.graphite.configuration.LevelConfigurations graphiteConfiguration() {
++        return this.graphiteConfig;
++    }
++    // Graphite end
+ }
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index 7fd37983efee051b7e8dc07618950afa40987e5a..5b6bde24fae0f54fff3a2de5f3bb3e64254dd718 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -24,7 +24,6 @@ import java.io.FileNotFoundException;
+ import java.io.IOException;
+ import java.io.InputStreamReader;
+ import java.net.InetAddress;
+-import java.net.InetSocketAddress;
+ import java.util.ArrayList;
+ import java.util.Collections;
+ import java.util.HashMap;
+@@ -242,7 +241,6 @@ import org.bukkit.plugin.PluginManager;
+ import org.bukkit.plugin.ServicesManager;
+ import org.bukkit.plugin.SimplePluginManager;
+ import org.bukkit.plugin.SimpleServicesManager;
+-import org.bukkit.plugin.java.JavaPluginLoader;
+ import org.bukkit.plugin.messaging.Messenger;
+ import org.bukkit.plugin.messaging.StandardMessenger;
+ import org.bukkit.potion.Potion;
+@@ -1070,6 +1068,7 @@ public final class CraftServer implements Server {
+ 
+         org.spigotmc.SpigotConfig.init((File) console.options.valueOf("spigot-settings")); // Spigot
+         this.console.paperConfigurations.reloadConfigs(this.console);
++        this.console.graphiteConfigurations.reloadConfigs(this.console); // Graphite
+         org.purpurmc.purpur.PurpurConfig.init((File) console.options.valueOf("purpur-settings")); // Purpur
+         for (ServerLevel world : this.console.getAllLevels()) {
+             // world.serverLevelData.setDifficulty(config.difficulty); // Paper - per level difficulty
+@@ -1102,6 +1101,7 @@ public final class CraftServer implements Server {
+         this.reloadData();
+         org.spigotmc.SpigotConfig.registerCommands(); // Spigot
+         io.papermc.paper.command.PaperCommands.registerCommands(this.console); // Paper
++        org.graphitemc.graphite.command.GraphiteCommands.registerCommands(this.console); // Graphite
+         org.purpurmc.purpur.PurpurConfig.registerCommands(); // Purpur
+         this.overrideAllCommandBlockCommands = this.commandsConfiguration.getStringList("command-block-overrides").contains("*");
+         this.ignoreVanillaPermissions = this.commandsConfiguration.getBoolean("ignore-vanilla-permissions");
+@@ -2947,6 +2947,12 @@ public final class CraftServer implements Server {
+             return getProperties().properties;
+         }
+         // Purpur end
++        // Graphite start - Graphite configuration
++        @Override
++        public YamlConfiguration getGraphiteConfig() {
++            return CraftServer.this.console.graphiteConfigurations.createLegacyObject(CraftServer.this.console);
++        }
++        // Graphite end - Graphite configuration
+ 
+         @Override
+         public void restart() {
+diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
+index 0bc9b176a3b86a5b4153a2110621534c692d8240..a33431ffd4e524f088840aefdd0b2444193196b8 100644
+--- a/src/main/java/org/bukkit/craftbukkit/Main.java
++++ b/src/main/java/org/bukkit/craftbukkit/Main.java
+@@ -186,6 +186,13 @@ public class Main {
+                         .defaultsTo(new File("pufferfish.yml"))
+                         .describedAs("Yml file");
+                 // Purpur end
++                // Graphite start
++                acceptsAll(asList("graphite-dir", "graphite-settings-directory"), "Directory for Graphite settings")
++                        .withRequiredArg()
++                        .ofType(File.class)
++                        .defaultsTo(new File(io.papermc.paper.configuration.PaperConfigurations.CONFIG_DIR))
++                        .describedAs("Config directory");
++                // Graphite end
+ 
+                 // Paper start
+                 acceptsAll(asList("server-name"), "Name of the server")
+diff --git a/src/main/java/org/graphitemc/graphite/command/GraphiteCommand.java b/src/main/java/org/graphitemc/graphite/command/GraphiteCommand.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..9f95810253e49b68bb0191127c7f6cc7eb2d5947
+index 0000000000000000000000000000000000000000..d68f5d90a562675ccc97aaf4a28bc778c4732fa7
 --- /dev/null
-+++ b/src/main/java/dev/graphitemc/graphite/command/GraphiteCommand.java
++++ b/src/main/java/org/graphitemc/graphite/command/GraphiteCommand.java
 @@ -0,0 +1,113 @@
-+package dev.graphitemc.graphite.command;
++package org.graphitemc.graphite.command;
 +
 +import io.papermc.paper.command.CommandUtil;
 +import it.unimi.dsi.fastutil.Pair;
@@ -123,13 +475,13 @@ index 0000000000000000000000000000000000000000..9f95810253e49b68bb0191127c7f6cc7
 +    }
 +
 +}
-diff --git a/src/main/java/dev/graphitemc/graphite/command/GraphiteCommands.java b/src/main/java/dev/graphitemc/graphite/command/GraphiteCommands.java
+diff --git a/src/main/java/org/graphitemc/graphite/command/GraphiteCommands.java b/src/main/java/org/graphitemc/graphite/command/GraphiteCommands.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..7d8e4ccf1a6e37423a105865292f59de77291e3c
+index 0000000000000000000000000000000000000000..3bcd61af3af0ab1cb0521bb8532f06bc0e0f93da
 --- /dev/null
-+++ b/src/main/java/dev/graphitemc/graphite/command/GraphiteCommands.java
++++ b/src/main/java/org/graphitemc/graphite/command/GraphiteCommands.java
 @@ -0,0 +1,26 @@
-+package dev.graphitemc.graphite.command;
++package org.graphitemc.graphite.command;
 +
 +import net.minecraft.server.MinecraftServer;
 +import org.bukkit.command.Command;
@@ -155,13 +507,13 @@ index 0000000000000000000000000000000000000000..7d8e4ccf1a6e37423a105865292f59de
 +    }
 +
 +}
-diff --git a/src/main/java/dev/graphitemc/graphite/command/GraphiteSubCommand.java b/src/main/java/dev/graphitemc/graphite/command/GraphiteSubCommand.java
+diff --git a/src/main/java/org/graphitemc/graphite/command/GraphiteSubCommand.java b/src/main/java/org/graphitemc/graphite/command/GraphiteSubCommand.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..02ed1198e9def7f4769715c4aea4bd365cdc07a2
+index 0000000000000000000000000000000000000000..8a27f5b069d873a2cc6860ab5aedf088cdc08b69
 --- /dev/null
-+++ b/src/main/java/dev/graphitemc/graphite/command/GraphiteSubCommand.java
++++ b/src/main/java/org/graphitemc/graphite/command/GraphiteSubCommand.java
 @@ -0,0 +1,16 @@
-+package dev.graphitemc.graphite.command;
++package org.graphitemc.graphite.command;
 +
 +import org.bukkit.command.CommandSender;
 +
@@ -177,13 +529,13 @@ index 0000000000000000000000000000000000000000..02ed1198e9def7f4769715c4aea4bd36
 +    }
 +
 +}
-diff --git a/src/main/java/dev/graphitemc/graphite/command/ReloadCommand.java b/src/main/java/dev/graphitemc/graphite/command/ReloadCommand.java
+diff --git a/src/main/java/org/graphitemc/graphite/command/ReloadCommand.java b/src/main/java/org/graphitemc/graphite/command/ReloadCommand.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..cb1774130d3a50ca7507f855e1b7b3e21b1437d1
+index 0000000000000000000000000000000000000000..80cf80306c6c83c9556c596a2a15da29b3951f0d
 --- /dev/null
-+++ b/src/main/java/dev/graphitemc/graphite/command/ReloadCommand.java
++++ b/src/main/java/org/graphitemc/graphite/command/ReloadCommand.java
 @@ -0,0 +1,27 @@
-+package dev.graphitemc.graphite.command;
++package org.graphitemc.graphite.command;
 +
 +import net.kyori.adventure.text.format.NamedTextColor;
 +import net.minecraft.server.MinecraftServer;
@@ -210,13 +562,13 @@ index 0000000000000000000000000000000000000000..cb1774130d3a50ca7507f855e1b7b3e2
 +    }
 +
 +}
-diff --git a/src/main/java/dev/graphitemc/graphite/command/VersionCommand.java b/src/main/java/dev/graphitemc/graphite/command/VersionCommand.java
+diff --git a/src/main/java/org/graphitemc/graphite/command/VersionCommand.java b/src/main/java/org/graphitemc/graphite/command/VersionCommand.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..e991c4a5785dc38f3a7d0593c0e2680a925b023e
+index 0000000000000000000000000000000000000000..6e6f573f4dad7645eb69b6f7577204fe5d03525a
 --- /dev/null
-+++ b/src/main/java/dev/graphitemc/graphite/command/VersionCommand.java
++++ b/src/main/java/org/graphitemc/graphite/command/VersionCommand.java
 @@ -0,0 +1,17 @@
-+package dev.graphitemc.graphite.command;
++package org.graphitemc.graphite.command;
 +
 +import org.bukkit.Bukkit;
 +import org.bukkit.command.Command;
@@ -233,13 +585,13 @@ index 0000000000000000000000000000000000000000..e991c4a5785dc38f3a7d0593c0e2680a
 +    }
 +
 +}
-diff --git a/src/main/java/dev/graphitemc/graphite/configuration/GlobalConfiguration.java b/src/main/java/dev/graphitemc/graphite/configuration/GlobalConfiguration.java
+diff --git a/src/main/java/org/graphitemc/graphite/configuration/GlobalConfiguration.java b/src/main/java/org/graphitemc/graphite/configuration/GlobalConfiguration.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..0b53bce45408148b94ca7f341f57d26b96333b15
+index 0000000000000000000000000000000000000000..9ae5b00a7e8c7286ac310c52f0e4b6514da0e01e
 --- /dev/null
-+++ b/src/main/java/dev/graphitemc/graphite/configuration/GlobalConfiguration.java
++++ b/src/main/java/org/graphitemc/graphite/configuration/GlobalConfiguration.java
 @@ -0,0 +1,23 @@
-+package dev.graphitemc.graphite.configuration;
++package org.graphitemc.graphite.configuration;
 +
 +import io.papermc.paper.configuration.Configuration;
 +import io.papermc.paper.configuration.ConfigurationPart;
@@ -262,13 +614,13 @@ index 0000000000000000000000000000000000000000..0b53bce45408148b94ca7f341f57d26b
 +    public int version = CURRENT_VERSION;
 +
 +}
-diff --git a/src/main/java/dev/graphitemc/graphite/configuration/GraphiteConfigurations.java b/src/main/java/dev/graphitemc/graphite/configuration/GraphiteConfigurations.java
+diff --git a/src/main/java/org/graphitemc/graphite/configuration/GraphiteConfigurations.java b/src/main/java/org/graphitemc/graphite/configuration/GraphiteConfigurations.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..7ffc5fc0e303712eb0b98880320e1849c9cb3e85
+index 0000000000000000000000000000000000000000..cb1d7af196d3833ac213472c8701b713d1d65b94
 --- /dev/null
-+++ b/src/main/java/dev/graphitemc/graphite/configuration/GraphiteConfigurations.java
++++ b/src/main/java/org/graphitemc/graphite/configuration/GraphiteConfigurations.java
 @@ -0,0 +1,274 @@
-+package dev.graphitemc.graphite.configuration;
++package org.graphitemc.graphite.configuration;
 +
 +import com.google.common.collect.Table;
 +import com.mojang.logging.LogUtils;
@@ -464,7 +816,7 @@ index 0000000000000000000000000000000000000000..7ffc5fc0e303712eb0b98880320e1849
 +
 +    @Override
 +    protected void applyGlobalConfigTransformations(final ConfigurationNode node) throws ConfigurateException {
-+        applyTransformations(RemovedConfigurations.REMOVED_GLOBAL_PATHS, node);
++        applyTransformations(org.graphitemc.graphite.configuration.RemovedConfigurations.REMOVED_GLOBAL_PATHS, node);
 +    }
 +
 +    @Override
@@ -477,7 +829,7 @@ index 0000000000000000000000000000000000000000..7ffc5fc0e303712eb0b98880320e1849
 +            version.raw(LevelConfigurations.CURRENT_VERSION);
 +        }
 +
-+        applyTransformations(RemovedConfigurations.REMOVED_LEVEL_PATHS, node);
++        applyTransformations(org.graphitemc.graphite.configuration.RemovedConfigurations.REMOVED_LEVEL_PATHS, node);
 +    }
 +
 +    @Override
@@ -542,13 +894,13 @@ index 0000000000000000000000000000000000000000..7ffc5fc0e303712eb0b98880320e1849
 +        }
 +    }
 +}
-diff --git a/src/main/java/dev/graphitemc/graphite/configuration/LevelConfigurations.java b/src/main/java/dev/graphitemc/graphite/configuration/LevelConfigurations.java
+diff --git a/src/main/java/org/graphitemc/graphite/configuration/LevelConfigurations.java b/src/main/java/org/graphitemc/graphite/configuration/LevelConfigurations.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..eafc72ea2e80c627bfe3957f72502cbd1cb5da5c
+index 0000000000000000000000000000000000000000..8fc66aa982820b3179e1216f3176f6e8d1079a16
 --- /dev/null
-+++ b/src/main/java/dev/graphitemc/graphite/configuration/LevelConfigurations.java
++++ b/src/main/java/org/graphitemc/graphite/configuration/LevelConfigurations.java
 @@ -0,0 +1,25 @@
-+package dev.graphitemc.graphite.configuration;
++package org.graphitemc.graphite.configuration;
 +
 +import io.papermc.paper.configuration.Configuration;
 +import io.papermc.paper.configuration.ConfigurationPart;
@@ -573,13 +925,13 @@ index 0000000000000000000000000000000000000000..eafc72ea2e80c627bfe3957f72502cbd
 +    public int version = CURRENT_VERSION;
 +
 +}
-diff --git a/src/main/java/dev/graphitemc/graphite/configuration/RemovedConfigurations.java b/src/main/java/dev/graphitemc/graphite/configuration/RemovedConfigurations.java
+diff --git a/src/main/java/org/graphitemc/graphite/configuration/RemovedConfigurations.java b/src/main/java/org/graphitemc/graphite/configuration/RemovedConfigurations.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..a37be0c21c929bd1bec0f9b2f4fff2847aaecdb6
+index 0000000000000000000000000000000000000000..ba543801871a23faef345ef73813033aea7a3d72
 --- /dev/null
-+++ b/src/main/java/dev/graphitemc/graphite/configuration/RemovedConfigurations.java
++++ b/src/main/java/org/graphitemc/graphite/configuration/RemovedConfigurations.java
 @@ -0,0 +1,11 @@
-+package dev.graphitemc.graphite.configuration;
++package org.graphitemc.graphite.configuration;
 +
 +import org.spongepowered.configurate.NodePath;
 +
@@ -590,355 +942,3 @@ index 0000000000000000000000000000000000000000..a37be0c21c929bd1bec0f9b2f4fff284
 +    NodePath[] REMOVED_LEVEL_PATHS = {};
 +
 +}
-diff --git a/src/main/java/io/papermc/paper/configuration/ConfigurationPart.java b/src/main/java/io/papermc/paper/configuration/ConfigurationPart.java
-index 7a4a7a654fe2516ed894a68f2657344df9d70f4c..f8564af782488f67b10f1d3e51679ea7a293ab27 100644
---- a/src/main/java/io/papermc/paper/configuration/ConfigurationPart.java
-+++ b/src/main/java/io/papermc/paper/configuration/ConfigurationPart.java
-@@ -1,6 +1,6 @@
- package io.papermc.paper.configuration;
- 
--abstract class ConfigurationPart {
-+public abstract class ConfigurationPart { // Graphite - Package -> public
- 
-     public static abstract class Post extends ConfigurationPart {
- 
-diff --git a/src/main/java/io/papermc/paper/configuration/Configurations.java b/src/main/java/io/papermc/paper/configuration/Configurations.java
-index 9ef6712c70fcd8912a79f3f61e351aac09572cf3..35a0936fcf07af797e479ef7d1204b11106e863a 100644
---- a/src/main/java/io/papermc/paper/configuration/Configurations.java
-+++ b/src/main/java/io/papermc/paper/configuration/Configurations.java
-@@ -88,7 +88,7 @@ public abstract class Configurations<G, W> {
-         };
-     }
- 
--    static <T> CheckedFunction<ConfigurationNode, T, SerializationException> reloader(Class<T> type, T instance) {
-+    public static <T> CheckedFunction<ConfigurationNode, T, SerializationException> reloader(Class<T> type, T instance) { // Graphite - Package -> public
-         return node -> {
-             ObjectMapper.Factory factory = (ObjectMapper.Factory) Objects.requireNonNull(node.options().serializers().get(type));
-             ObjectMapper.Mutable<T> mutable = (ObjectMapper.Mutable<T>) factory.get(type);
-@@ -148,7 +148,7 @@ public abstract class Configurations<G, W> {
-         final YamlConfigurationLoader loader = result.loader();
-         final ConfigurationNode node = loader.load();
-         if (result.isNewFile()) { // add version to new files
--            node.node(Configuration.VERSION_FIELD).raw(WorldConfiguration.CURRENT_VERSION);
-+            node.node(Configuration.VERSION_FIELD).raw(getWorldConfigurationCurrentVersion()); // Graphite
-         }
-         this.applyWorldConfigTransformations(contextMap, node);
-         final W instance = node.require(this.worldConfigClass);
-@@ -207,7 +207,7 @@ public abstract class Configurations<G, W> {
-             .build();
-         final ConfigurationNode worldNode = worldLoader.load();
-         if (newFile) { // set the version field if new file
--            worldNode.node(Configuration.VERSION_FIELD).set(WorldConfiguration.CURRENT_VERSION);
-+            worldNode.node(Configuration.VERSION_FIELD).set(getWorldConfigurationCurrentVersion()); // Graphite
-         }
-         this.applyWorldConfigTransformations(contextMap, worldNode);
-         this.applyDefaultsAwareWorldConfigTransformations(contextMap, worldNode, defaultsNode);
-@@ -308,4 +308,18 @@ public abstract class Configurations<G, W> {
-             return "ContextKey{" + this.name + "}";
-         }
-     }
-+    // Graphite start
-+    @Deprecated
-+    public org.bukkit.configuration.file.YamlConfiguration createLegacyObject(final net.minecraft.server.MinecraftServer server) {
-+        org.bukkit.configuration.file.YamlConfiguration global = org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(this.globalFolder.resolve(this.globalConfigFileName).toFile());
-+        org.bukkit.configuration.ConfigurationSection worlds = global.createSection("__________WORLDS__________");
-+        worlds.set("__defaults__", org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(this.globalFolder.resolve(this.defaultWorldConfigFileName).toFile()));
-+        for (ServerLevel level : server.getAllLevels()) {
-+            worlds.set(level.getWorld().getName(), org.bukkit.configuration.file.YamlConfiguration.loadConfiguration(getWorldConfigFile(level).toFile()));
-+        }
-+        return global;
-+    }
-+
-+    protected abstract int getWorldConfigurationCurrentVersion();
-+    // Graphite end
- }
-diff --git a/src/main/java/io/papermc/paper/configuration/InnerClassFieldDiscoverer.java b/src/main/java/io/papermc/paper/configuration/InnerClassFieldDiscoverer.java
-index a0aa1f1a7adf986d500a2135aa42e138aa3c4f08..9f047f4fa5aceda029cd02b0599ad35cb131f9f7 100644
---- a/src/main/java/io/papermc/paper/configuration/InnerClassFieldDiscoverer.java
-+++ b/src/main/java/io/papermc/paper/configuration/InnerClassFieldDiscoverer.java
-@@ -17,7 +17,7 @@ import java.util.Map;
- 
- import static io.leangen.geantyref.GenericTypeReflector.erase;
- 
--final class InnerClassFieldDiscoverer implements FieldDiscoverer<Map<Field, Object>> {
-+public final class InnerClassFieldDiscoverer implements FieldDiscoverer<Map<Field, Object>> { // Graphite - Package -> public
- 
-     private final Map<Class<?>, Object> instanceMap = new HashMap<>();
-     private final Map<Class<?>, Object> overrides;
-@@ -136,7 +136,16 @@ final class InnerClassFieldDiscoverer implements FieldDiscoverer<Map<Field, Obje
-         return new InnerClassFieldDiscoverer(overrides);
-     }
- 
--    static FieldDiscoverer<?> globalConfig() {
-+    public static FieldDiscoverer<?> globalConfig() { // Graphite - Package -> public
-         return new InnerClassFieldDiscoverer(Collections.emptyMap());
-     }
-+    // Graphite start
-+    public static FieldDiscoverer<?> graphiteLevelConfiguration(Configurations.ContextMap contextMap) {
-+        final Map<Class<?>, Object> overrides = Map.of(
-+                dev.graphitemc.graphite.configuration.LevelConfigurations.class,
-+                new dev.graphitemc.graphite.configuration.LevelConfigurations(contextMap.require(Configurations.WORLD_KEY)));
-+
-+        return new InnerClassFieldDiscoverer(overrides);
-+    }
-+    // Graphite end
- }
-diff --git a/src/main/java/io/papermc/paper/configuration/PaperConfigurations.java b/src/main/java/io/papermc/paper/configuration/PaperConfigurations.java
-index ad2177cdbc61a6f41c7e2ed81af262d4ffe7d861..12558edda8f66bca67b71508da02f238ca312247 100644
---- a/src/main/java/io/papermc/paper/configuration/PaperConfigurations.java
-+++ b/src/main/java/io/papermc/paper/configuration/PaperConfigurations.java
-@@ -134,7 +134,7 @@ public class PaperConfigurations extends Configurations<GlobalConfiguration, Wor
-             SpigotConfig.readConfig(SpigotWorldConfig.class, this);
-         }
-     });
--    static final ContextKey<Supplier<SpigotWorldConfig>> SPIGOT_WORLD_CONFIG_CONTEXT_KEY = new ContextKey<>(new TypeToken<Supplier<SpigotWorldConfig>>() {}, "spigot world config");
-+    public static final ContextKey<Supplier<SpigotWorldConfig>> SPIGOT_WORLD_CONFIG_CONTEXT_KEY = new ContextKey<>(new TypeToken<Supplier<SpigotWorldConfig>>() {}, "spigot world config"); // Graphite - Package -> public
- 
- 
-     public PaperConfigurations(final Path globalFolder) {
-@@ -298,7 +298,7 @@ public class PaperConfigurations extends Configurations<GlobalConfiguration, Wor
-         }
-     }
- 
--    private static ContextMap createWorldContextMap(ServerLevel level) {
-+    public static ContextMap createWorldContextMap(ServerLevel level) { // Graphite - Private -> public
-         return createWorldContextMap(level.convertable.levelDirectory.path(), level.serverLevelData.getLevelName(), level.dimension().location(), level.spigotConfig);
-     }
- 
-@@ -399,6 +399,7 @@ public class PaperConfigurations extends Configurations<GlobalConfiguration, Wor
-         return Files.exists(legacyConfig) && Files.isRegularFile(legacyConfig);
-     }
- 
-+    /* // Graphite start
-     @Deprecated
-     public YamlConfiguration createLegacyObject(final MinecraftServer server) {
-         YamlConfiguration global = YamlConfiguration.loadConfiguration(this.globalFolder.resolve(this.globalConfigFileName).toFile());
-@@ -408,7 +409,7 @@ public class PaperConfigurations extends Configurations<GlobalConfiguration, Wor
-             worlds.set(level.getWorld().getName(), YamlConfiguration.loadConfiguration(getWorldConfigFile(level).toFile()));
-         }
-         return global;
--    }
-+    } */ // Graphite end
- 
-     @Deprecated
-     public static YamlConfiguration loadLegacyConfigFile(File configFile) throws Exception {
-@@ -432,9 +433,15 @@ public class PaperConfigurations extends Configurations<GlobalConfiguration, Wor
-     }
- 
-     // Symlinks are not correctly checked in createDirectories
--    static void createDirectoriesSymlinkAware(Path path) throws IOException {
-+    public static void createDirectoriesSymlinkAware(Path path) throws IOException { // Graphite - Package -> public
-         if (!Files.isDirectory(path)) {
-             Files.createDirectories(path);
-         }
-     }
-+    // Graphite start
-+    @Override
-+    protected int getWorldConfigurationCurrentVersion() {
-+        return WorldConfiguration.CURRENT_VERSION;
-+    }
-+    // Graphite end
- }
-diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 6afdf37406d7dae04a7fec94e0c39d5136521730..3cac7394211ba7d1dac80897365505dc98e306d4 100644
---- a/src/main/java/net/minecraft/server/MinecraftServer.java
-+++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -307,6 +307,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
-     public final double[] recentTps = new double[ 4 ]; // Purpur
-     // Spigot end
-     public final io.papermc.paper.configuration.PaperConfigurations paperConfigurations;
-+    public final dev.graphitemc.graphite.configuration.GraphiteConfigurations graphiteConfigurations; // Graphite
-     public static long currentTickLong = 0L; // Paper
-     public boolean lagging = false; // Purpur
-     protected boolean upnp = false; // Purpur
-@@ -413,6 +414,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
-         // Paper end
-         Runtime.getRuntime().addShutdownHook(new org.bukkit.craftbukkit.util.ServerShutdownThread(this));
-         this.paperConfigurations = services.paperConfigurations(); // Paper
-+        this.graphiteConfigurations = services.graphiteConfigurations(); // Graphite
-     }
-     // CraftBukkit end
- 
-diff --git a/src/main/java/net/minecraft/server/Services.java b/src/main/java/net/minecraft/server/Services.java
-index a9b2c8cd4dcd3f884e4306bebee9334d3848fce5..54b916e8ae87865846d8c0cfd03f3e8db11e84ff 100644
---- a/src/main/java/net/minecraft/server/Services.java
-+++ b/src/main/java/net/minecraft/server/Services.java
-@@ -11,10 +11,10 @@ import net.minecraft.server.players.GameProfileCache;
- import net.minecraft.util.SignatureValidator;
- 
- // Paper start
--public record Services(MinecraftSessionService sessionService, ServicesKeySet servicesKeySet, GameProfileRepository profileRepository, GameProfileCache profileCache, @javax.annotation.Nullable io.papermc.paper.configuration.PaperConfigurations paperConfigurations) {
-+public record Services(MinecraftSessionService sessionService, ServicesKeySet servicesKeySet, GameProfileRepository profileRepository, GameProfileCache profileCache, @javax.annotation.Nullable io.papermc.paper.configuration.PaperConfigurations paperConfigurations, @javax.annotation.Nullable dev.graphitemc.graphite.configuration.GraphiteConfigurations graphiteConfigurations) {
- 
-     public Services(MinecraftSessionService sessionService, ServicesKeySet servicesKeySet, GameProfileRepository profileRepository, GameProfileCache profileCache) {
--        this(sessionService, servicesKeySet, profileRepository, profileCache, null);
-+        this(sessionService, servicesKeySet, profileRepository, profileCache, null, null);
-     }
- 
-     @Override
-@@ -22,6 +22,12 @@ public record Services(MinecraftSessionService sessionService, ServicesKeySet se
-         return java.util.Objects.requireNonNull(this.paperConfigurations);
-     }
-     // Paper end
-+    // Graphite start
-+    @Override
-+    public dev.graphitemc.graphite.configuration.GraphiteConfigurations graphiteConfigurations() {
-+        return java.util.Objects.requireNonNull(this.graphiteConfigurations);
-+    }
-+    // Graphite end
-     public static final String USERID_CACHE_FILE = "usercache.json"; // Paper - private -> public
- 
-     public static Services create(YggdrasilAuthenticationService authenticationService, File rootDirectory, File userCacheFile, joptsimple.OptionSet optionSet) throws Exception { // Paper
-@@ -32,7 +38,11 @@ public record Services(MinecraftSessionService sessionService, ServicesKeySet se
-         final java.nio.file.Path legacyConfigPath = ((File) optionSet.valueOf("paper-settings")).toPath();
-         final java.nio.file.Path configDirPath = ((File) optionSet.valueOf("paper-settings-directory")).toPath();
-         io.papermc.paper.configuration.PaperConfigurations paperConfigurations = io.papermc.paper.configuration.PaperConfigurations.setup(legacyConfigPath, configDirPath, rootDirectory.toPath(), (File) optionSet.valueOf("spigot-settings"));
--        return new Services(minecraftSessionService, authenticationService.getServicesKeySet(), gameProfileRepository, gameProfileCache, paperConfigurations);
-+        // Graphite start
-+        final java.nio.file.Path graphiteConfigurationDirPath = ((File) optionSet.valueOf("graphite-settings-directory")).toPath();
-+        dev.graphitemc.graphite.configuration.GraphiteConfigurations graphiteConfigurations = dev.graphitemc.graphite.configuration.GraphiteConfigurations.setup(graphiteConfigurationDirPath);
-+        return new Services(minecraftSessionService, authenticationService.getServicesKeySet(), gameProfileRepository, gameProfileCache, paperConfigurations, graphiteConfigurations);
-+        // Graphite end
-         // Paper end
-     }
- 
-diff --git a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
-index 12124d6fbc0406bb62bd95a0f7bab68afa43377c..50a92f0160ae778085039c9c3468fd3bb9416492 100644
---- a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
-+++ b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
-@@ -209,6 +209,11 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
-         io.papermc.paper.util.ObfHelper.INSTANCE.getClass(); // Paper - load mappings for stacktrace deobf and etc.
-         paperConfigurations.initializeGlobalConfiguration();
-         paperConfigurations.initializeWorldDefaultsConfiguration();
-+        // Graphite start
-+        graphiteConfigurations.initializeGlobalConfiguration();
-+        graphiteConfigurations.initializeWorldDefaultsConfiguration();
-+        // TODO Commands
-+        // Graphite end
-         // Paper start - moved up to right after PlayerList creation but before file load/save
-         if (this.convertOldUsers()) {
-             this.getProfileCache().save(false); // Paper
-@@ -218,6 +223,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
-         org.spigotmc.WatchdogThread.doStart(org.spigotmc.SpigotConfig.timeoutTime, org.spigotmc.SpigotConfig.restartOnCrash);
-         thread.start(); // Paper - start console thread after MinecraftServer.console & PaperConfig are initialized
-         io.papermc.paper.command.PaperCommands.registerCommands(this);
-+        dev.graphitemc.graphite.command.GraphiteCommands.registerCommands(this); // Graphite
-         com.destroystokyo.paper.Metrics.PaperMetrics.startMetrics();
-         // Purpur start
-         try {
-@@ -228,6 +234,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
-         }
-         org.purpurmc.purpur.PurpurConfig.registerCommands();
-         // Purpur end
-+        // Graphite start
-         com.destroystokyo.paper.VersionHistoryManager.INSTANCE.getClass(); // load version history now
-         io.papermc.paper.brigadier.PaperBrigadierProviderImpl.INSTANCE.getClass(); // init PaperBrigadierProvider
-         // Paper end
-diff --git a/src/main/java/net/minecraft/server/level/ServerLevel.java b/src/main/java/net/minecraft/server/level/ServerLevel.java
-index 221d1d0e1b4b46de6ebca5faac09bbda875fae17..893ce915614ba85a970c5ad2d16787fe2971e72c 100644
---- a/src/main/java/net/minecraft/server/level/ServerLevel.java
-+++ b/src/main/java/net/minecraft/server/level/ServerLevel.java
-@@ -650,7 +650,7 @@ public class ServerLevel extends Level implements WorldGenLevel {
-         // Holder holder = worlddimension.type(); // CraftBukkit - decompile error
- 
-         // Objects.requireNonNull(minecraftserver); // CraftBukkit - decompile error
--        super(iworlddataserver, resourcekey, minecraftserver.registryAccess(), worlddimension.type(), minecraftserver::getProfiler, false, flag, i, minecraftserver.getMaxChainedNeighborUpdates(), gen, biomeProvider, env, spigotConfig -> minecraftserver.paperConfigurations.createWorldConfig(io.papermc.paper.configuration.PaperConfigurations.createWorldContextMap(convertable_conversionsession.levelDirectory.path(), iworlddataserver.getLevelName(), resourcekey.location(), spigotConfig)), executor); // Paper - Async-Anti-Xray - Pass executor
-+        super(iworlddataserver, resourcekey, minecraftserver.registryAccess(), worlddimension.type(), minecraftserver::getProfiler, false, flag, i, minecraftserver.getMaxChainedNeighborUpdates(), gen, biomeProvider, env, spigotConfig -> minecraftserver.paperConfigurations.createWorldConfig(io.papermc.paper.configuration.PaperConfigurations.createWorldContextMap(convertable_conversionsession.levelDirectory.path(), iworlddataserver.getLevelName(), resourcekey.location(), spigotConfig)), spigotConfig -> minecraftserver.graphiteConfigurations.createWorldConfig(io.papermc.paper.configuration.PaperConfigurations.createWorldContextMap(convertable_conversionsession.levelDirectory.path(), iworlddataserver.getLevelName(), resourcekey.location(), spigotConfig)), executor); // Paper - Async-Anti-Xray - Pass executor
-         this.pvpMode = minecraftserver.isPvpAllowed();
-         this.convertable = convertable_conversionsession;
-         this.uuid = WorldUUID.getUUID(convertable_conversionsession.levelDirectory.path().toFile());
-diff --git a/src/main/java/net/minecraft/world/level/Level.java b/src/main/java/net/minecraft/world/level/Level.java
-index bdb32964524cb2a4398b8d3bedfb03b0cb805b6d..829f617e55438d7ce0afae5c06dafbceb53695f3 100644
---- a/src/main/java/net/minecraft/world/level/Level.java
-+++ b/src/main/java/net/minecraft/world/level/Level.java
-@@ -328,9 +328,10 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
-     @Override public final int getHeight() { return this.height; }
-     // Pufferfish end
- 
--    protected Level(WritableLevelData worlddatamutable, ResourceKey<Level> resourcekey, RegistryAccess iregistrycustom, Holder<DimensionType> holder, Supplier<ProfilerFiller> supplier, boolean flag, boolean flag1, long i, int j, org.bukkit.generator.ChunkGenerator gen, org.bukkit.generator.BiomeProvider biomeProvider, org.bukkit.World.Environment env, java.util.function.Function<org.spigotmc.SpigotWorldConfig, io.papermc.paper.configuration.WorldConfiguration> paperWorldConfigCreator, java.util.concurrent.Executor executor) { // Paper - Async-Anti-Xray - Pass executor
-+    protected Level(WritableLevelData worlddatamutable, ResourceKey<Level> resourcekey, RegistryAccess iregistrycustom, Holder<DimensionType> holder, Supplier<ProfilerFiller> supplier, boolean flag, boolean flag1, long i, int j, org.bukkit.generator.ChunkGenerator gen, org.bukkit.generator.BiomeProvider biomeProvider, org.bukkit.World.Environment env, java.util.function.Function<org.spigotmc.SpigotWorldConfig, io.papermc.paper.configuration.WorldConfiguration> paperWorldConfigCreator, java.util.function.Function<org.spigotmc.SpigotWorldConfig, dev.graphitemc.graphite.configuration.LevelConfigurations> graphiteWorldConfigCreator, java.util.concurrent.Executor executor) { // Paper - Async-Anti-Xray - Pass executor
-         this.spigotConfig = new org.spigotmc.SpigotWorldConfig(((net.minecraft.world.level.storage.PrimaryLevelData) worlddatamutable).getLevelName()); // Spigot
-         this.paperConfig = paperWorldConfigCreator.apply(this.spigotConfig); // Paper
-+        this.graphiteConfig = graphiteWorldConfigCreator.apply(this.spigotConfig); // Graphite
-         this.purpurConfig = new org.purpurmc.purpur.PurpurWorldConfig(((net.minecraft.world.level.storage.PrimaryLevelData) worlddatamutable).getLevelName(), env); // Purpur
-         this.playerBreedingCooldowns = this.getNewBreedingCooldownCache(); // Purpur
-         this.generator = gen;
-@@ -1630,4 +1631,11 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
-         return getWorld().getEnvironment() == org.bukkit.World.Environment.THE_END;
-     }
-     // Purpur end
-+    // Graphite start
-+    private final dev.graphitemc.graphite.configuration.LevelConfigurations graphiteConfig;
-+
-+    public dev.graphitemc.graphite.configuration.LevelConfigurations graphiteConfiguration() {
-+        return this.graphiteConfig;
-+    }
-+    // Graphite end
- }
-diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 7fd37983efee051b7e8dc07618950afa40987e5a..905f452b2389527bf9822f446badd622ae18deb8 100644
---- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-+++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-@@ -24,7 +24,6 @@ import java.io.FileNotFoundException;
- import java.io.IOException;
- import java.io.InputStreamReader;
- import java.net.InetAddress;
--import java.net.InetSocketAddress;
- import java.util.ArrayList;
- import java.util.Collections;
- import java.util.HashMap;
-@@ -242,7 +241,6 @@ import org.bukkit.plugin.PluginManager;
- import org.bukkit.plugin.ServicesManager;
- import org.bukkit.plugin.SimplePluginManager;
- import org.bukkit.plugin.SimpleServicesManager;
--import org.bukkit.plugin.java.JavaPluginLoader;
- import org.bukkit.plugin.messaging.Messenger;
- import org.bukkit.plugin.messaging.StandardMessenger;
- import org.bukkit.potion.Potion;
-@@ -1070,6 +1068,7 @@ public final class CraftServer implements Server {
- 
-         org.spigotmc.SpigotConfig.init((File) console.options.valueOf("spigot-settings")); // Spigot
-         this.console.paperConfigurations.reloadConfigs(this.console);
-+        this.console.graphiteConfigurations.reloadConfigs(this.console); // Graphite
-         org.purpurmc.purpur.PurpurConfig.init((File) console.options.valueOf("purpur-settings")); // Purpur
-         for (ServerLevel world : this.console.getAllLevels()) {
-             // world.serverLevelData.setDifficulty(config.difficulty); // Paper - per level difficulty
-@@ -1102,6 +1101,7 @@ public final class CraftServer implements Server {
-         this.reloadData();
-         org.spigotmc.SpigotConfig.registerCommands(); // Spigot
-         io.papermc.paper.command.PaperCommands.registerCommands(this.console); // Paper
-+        dev.graphitemc.graphite.command.GraphiteCommands.registerCommands(this.console); // Graphite
-         org.purpurmc.purpur.PurpurConfig.registerCommands(); // Purpur
-         this.overrideAllCommandBlockCommands = this.commandsConfiguration.getStringList("command-block-overrides").contains("*");
-         this.ignoreVanillaPermissions = this.commandsConfiguration.getBoolean("ignore-vanilla-permissions");
-@@ -2947,6 +2947,12 @@ public final class CraftServer implements Server {
-             return getProperties().properties;
-         }
-         // Purpur end
-+        // Graphite start - Graphite configuration
-+        @Override
-+        public YamlConfiguration getGraphiteConfig() {
-+            return CraftServer.this.console.graphiteConfigurations.createLegacyObject(CraftServer.this.console);
-+        }
-+        // Graphite end - Graphite configuration
- 
-         @Override
-         public void restart() {
-diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
-index 0bc9b176a3b86a5b4153a2110621534c692d8240..a33431ffd4e524f088840aefdd0b2444193196b8 100644
---- a/src/main/java/org/bukkit/craftbukkit/Main.java
-+++ b/src/main/java/org/bukkit/craftbukkit/Main.java
-@@ -186,6 +186,13 @@ public class Main {
-                         .defaultsTo(new File("pufferfish.yml"))
-                         .describedAs("Yml file");
-                 // Purpur end
-+                // Graphite start
-+                acceptsAll(asList("graphite-dir", "graphite-settings-directory"), "Directory for Graphite settings")
-+                        .withRequiredArg()
-+                        .ofType(File.class)
-+                        .defaultsTo(new File(io.papermc.paper.configuration.PaperConfigurations.CONFIG_DIR))
-+                        .describedAs("Config directory");
-+                // Graphite end
- 
-                 // Paper start
-                 acceptsAll(asList("server-name"), "Name of the server")

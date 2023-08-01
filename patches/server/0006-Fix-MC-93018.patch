@@ -5,18 +5,6 @@ Subject: [PATCH] Fix MC-93018
 
 See: https://bugs.mojang.com/browse/MC-93018
 
-diff --git a/src/main/java/dev/graphitemc/graphite/configuration/LevelConfigurations.java b/src/main/java/dev/graphitemc/graphite/configuration/LevelConfigurations.java
-index d65705e77fab5e8f2e75f304b8bcba77c786c11e..bbf2465be21ac530018267047c96d3309abd15d2 100644
---- a/src/main/java/dev/graphitemc/graphite/configuration/LevelConfigurations.java
-+++ b/src/main/java/dev/graphitemc/graphite/configuration/LevelConfigurations.java
-@@ -41,6 +41,7 @@ public class LevelConfigurations extends ConfigurationPart {
-     public class Miscellaneous extends ConfigurationPart {
- 
-         public boolean fixMC31819 = true;
-+        public boolean fixMC93018 = true;
- 
-     }
- 
 diff --git a/src/main/java/net/minecraft/world/entity/animal/Wolf.java b/src/main/java/net/minecraft/world/entity/animal/Wolf.java
 index 64bceae4d06b35fcbecb0daca2496ba30e39d995..12c55b595ac8edc4fe078d7e8ebf26937771f534 100644
 --- a/src/main/java/net/minecraft/world/entity/animal/Wolf.java
@@ -51,3 +39,15 @@ index 64bceae4d06b35fcbecb0daca2496ba30e39d995..12c55b595ac8edc4fe078d7e8ebf2693
      }
  
      public boolean isInterested() {
+diff --git a/src/main/java/org/graphitemc/graphite/configuration/LevelConfigurations.java b/src/main/java/org/graphitemc/graphite/configuration/LevelConfigurations.java
+index 66a13e262bf1b055b6602a7ce24bcc6dab40c470..0cc2500677721c57a636242df01784a4e8906eca 100644
+--- a/src/main/java/org/graphitemc/graphite/configuration/LevelConfigurations.java
++++ b/src/main/java/org/graphitemc/graphite/configuration/LevelConfigurations.java
+@@ -41,6 +41,7 @@ public class LevelConfigurations extends ConfigurationPart {
+     public class Miscellaneous extends ConfigurationPart {
+ 
+         public boolean fixMC31819 = true;
++        public boolean fixMC93018 = true;
+ 
+     }
+ 
