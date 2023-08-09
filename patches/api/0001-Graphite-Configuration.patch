@@ -5,10 +5,10 @@ Subject: [PATCH] Graphite Configuration
 
 
 diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
-index 916b9a9f05c0e83109bc9a4eb1692e2ed6e81eaf..aaff3484283f5c1dfa742582266f9f47043f331f 100644
+index 615c47f069d429e14993c60253f719b514849a67..5e242de3e52b3ac297f9b34c223ec1dd47e9b2a6 100644
 --- a/src/main/java/org/bukkit/Server.java
 +++ b/src/main/java/org/bukkit/Server.java
-@@ -2041,7 +2041,12 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
+@@ -2092,7 +2092,12 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
              throw new UnsupportedOperationException("Not supported yet.");
          }
          // Purpur end

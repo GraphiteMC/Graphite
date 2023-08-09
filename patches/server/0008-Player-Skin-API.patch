@@ -6,10 +6,10 @@ Subject: [PATCH] Player Skin API
 Ability to change a player's skin easily through new API
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 95bc2947ac44fa46f11c528da7f241ba410b7eb6..912dc8f86e189dde6f98fc82c624e236cf2a6753 100644
+index cdbbdb3f5a8b43811c564d1444a2b102add3ba72..4008ecb0ff7f454cf6a737e593d535e13e81f7e8 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-@@ -3297,4 +3297,125 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -3329,4 +3329,125 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
          this.getHandle().connection.send(new net.minecraft.network.protocol.game.ClientboundPlayerCombatKillPacket(getEntityId(), io.papermc.paper.adventure.PaperAdventure.asVanilla(message)));
      }
      // Purpur end

@@ -6,10 +6,10 @@ Subject: [PATCH] Player Skin API
 Ability to change a player's skin easily through new API
 
 diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
-index 74a9e27b8d3147876483743e1107632e332b0571..4e76b9e8ac9bd23b7954b07f3ba6e061f21896e6 100644
+index fb99e05b4769af604f41d81f036cee3b8a6ec197..00bcc9b4e6142ae647d91dd346a05ae65772f341 100644
 --- a/src/main/java/org/bukkit/entity/Player.java
 +++ b/src/main/java/org/bukkit/entity/Player.java
-@@ -1018,8 +1018,8 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -1084,8 +1084,8 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
       * they have seen it before because this method was called.
       * Note this method does not make the player invulnerable, which is normally expected when viewing credits.
       *
@@ -20,7 +20,7 @@ index 74a9e27b8d3147876483743e1107632e332b0571..4e76b9e8ac9bd23b7954b07f3ba6e061
       * @see <a href="https://minecraft.fandom.com/wiki/End_Poem#Technical_details">https://minecraft.fandom.com/wiki/End_Poem#Technical_details</a>
       */
      public void showWinScreen();
-@@ -2638,7 +2638,7 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -2704,7 +2704,7 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
       * @param simulationDistance the player's new simulation distance
       */
      public void setSimulationDistance(int simulationDistance);
@@ -29,7 +29,7 @@ index 74a9e27b8d3147876483743e1107632e332b0571..4e76b9e8ac9bd23b7954b07f3ba6e061
      /**
       * Gets the no-ticking view distance for this player.
       * <p>
-@@ -3314,4 +3314,28 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -3380,4 +3380,28 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
          sendDeathScreen(message);
      }
      // Purpur end
