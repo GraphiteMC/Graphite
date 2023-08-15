@@ -6,7 +6,7 @@ Subject: [PATCH] Player Skin API
 Ability to change a player's skin easily through new API
 
 diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
-index fb99e05b4769af604f41d81f036cee3b8a6ec197..00bcc9b4e6142ae647d91dd346a05ae65772f341 100644
+index 2e41fad4c033de003f89ab4ab549d2bf47ad7d4f..7800659b3f0caf64ddcff22dff512d94be7770a7 100644
 --- a/src/main/java/org/bukkit/entity/Player.java
 +++ b/src/main/java/org/bukkit/entity/Player.java
 @@ -1084,8 +1084,8 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
@@ -29,7 +29,7 @@ index fb99e05b4769af604f41d81f036cee3b8a6ec197..00bcc9b4e6142ae647d91dd346a05ae6
      /**
       * Gets the no-ticking view distance for this player.
       * <p>
-@@ -3380,4 +3380,28 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -3384,4 +3384,28 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
          sendDeathScreen(message);
      }
      // Purpur end
