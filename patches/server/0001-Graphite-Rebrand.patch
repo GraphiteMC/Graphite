@@ -136,7 +136,7 @@ index bdb32964524cb2a4398b8d3bedfb03b0cb805b6d..8f770b6d252f2ef6e8dc63c009301297
                  continue;
              }
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 60fbac7b09ba7de1127d53ba296ea7b843105b2a..d2bff98d1e2b137db9891f32703086c6d47b0fb7 100644
+index b08d4a2a74392b1d59b1eeeab3108103d83ad96c..b2cac8043e2b006ab2f07e3672b0a0c3cd449def 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -265,7 +265,7 @@ import javax.annotation.Nullable; // Paper
@@ -162,10 +162,10 @@ index 99597258e8e88cd9e2c901c4ac3ff7faeeabee2b..65dc12643d7533cbfa4813ce38baf353
  
          if (stream != null) {
 diff --git a/src/main/java/org/purpurmc/purpur/PurpurConfig.java b/src/main/java/org/purpurmc/purpur/PurpurConfig.java
-index f03aba5c25896677d9d37e3fa010590b1ab7e3b6..b14ed650d37eba870829dc22a46d86bc2659c502 100644
+index 3029f38cff6755b31427efb7fae3b6886ee8e4ee..2ce85ffaa3533c0e37a41c8a35cb0c7d1e055ccf 100644
 --- a/src/main/java/org/purpurmc/purpur/PurpurConfig.java
 +++ b/src/main/java/org/purpurmc/purpur/PurpurConfig.java
-@@ -229,7 +229,7 @@ public class PurpurConfig {
+@@ -231,7 +231,7 @@ public class PurpurConfig {
          deathMessageOnlyBroadcastToAffectedPlayer = getBoolean("settings.broadcasts.death.only-broadcast-to-affected-player", deathMessageOnlyBroadcastToAffectedPlayer);
      }
  

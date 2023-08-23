@@ -6,7 +6,7 @@ Subject: [PATCH] Player Skin API
 Ability to change a player's skin easily through new API
 
 diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
-index 2e41fad4c033de003f89ab4ab549d2bf47ad7d4f..7800659b3f0caf64ddcff22dff512d94be7770a7 100644
+index 9193288438671409cc3cf92033ef7cb60d798b69..8b5e87d0440c8d5a3bb446e0245e715d5697670b 100644
 --- a/src/main/java/org/bukkit/entity/Player.java
 +++ b/src/main/java/org/bukkit/entity/Player.java
 @@ -1084,8 +1084,8 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
@@ -20,7 +20,7 @@ index 2e41fad4c033de003f89ab4ab549d2bf47ad7d4f..7800659b3f0caf64ddcff22dff512d94
       * @see <a href="https://minecraft.fandom.com/wiki/End_Poem#Technical_details">https://minecraft.fandom.com/wiki/End_Poem#Technical_details</a>
       */
      public void showWinScreen();
-@@ -2704,7 +2704,7 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -2730,7 +2730,7 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
       * @param simulationDistance the player's new simulation distance
       */
      public void setSimulationDistance(int simulationDistance);
@@ -29,7 +29,7 @@ index 2e41fad4c033de003f89ab4ab549d2bf47ad7d4f..7800659b3f0caf64ddcff22dff512d94
      /**
       * Gets the no-ticking view distance for this player.
       * <p>
-@@ -3384,4 +3384,28 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
+@@ -3410,4 +3410,28 @@ public interface Player extends HumanEntity, Conversable, OfflinePlayer, PluginM
          sendDeathScreen(message);
      }
      // Purpur end
