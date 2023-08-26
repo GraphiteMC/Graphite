@@ -40,6 +40,12 @@ jobs:
       - name: Create Mojmap Jar
         run: ./gradlew createMojmapPaperclipJar  --stacktrace
 
+      - name: Publish
+        run: ./gradlew publish
+        env:
+          MAVEN_USERNAME: ${{ secrets.REPO_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.REPO_TOKEN }}
+
       - name: Upload Artifacts
         if: github.ref_name != env.branch
         uses: actions/upload-artifact@main
