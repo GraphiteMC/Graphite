@@ -34,17 +34,17 @@ jobs:
       - name: Build
         run: ./gradlew build --stacktrace
 
+      - name: Publish
+        run: ./gradlew publish
+        env:
+          graphitemcUsername: ${{ secrets.REPO_USERNAME }}
+          graphitemcPassword: ${{ secrets.REPO_TOKEN }}
+
       - name: Create Reobf Jar
         run: ./gradlew createReobfPaperclipJar --stacktrace
 
       - name: Create Mojmap Jar
         run: ./gradlew createMojmapPaperclipJar  --stacktrace
-
-      - name: Publish
-        run: ./gradlew publish
-        env:
-          MAVEN_USERNAME: ${{ secrets.REPO_USERNAME }}
-          MAVEN_PASSWORD: ${{ secrets.REPO_TOKEN }}
 
       - name: Upload Artifacts
         if: github.ref_name != env.branch
