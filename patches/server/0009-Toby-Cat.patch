@@ -1,0 +1,54 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrFishCakes <FinlayOxby@outlook.com>
+Date: Mon, 28 Aug 2023 00:16:05 +0100
+Subject: [PATCH] Toby Cat
+
+Rename a cat to "Toby" to turn them into the Toby variant.
+Just a small little easter egg for someone, no gameplay impact.
+
+diff --git a/src/main/java/net/minecraft/world/item/NameTagItem.java b/src/main/java/net/minecraft/world/item/NameTagItem.java
+index 7cc6812bf6f2ba015f65fd1fc1eaac02dd0f53e2..f3763e2b8794f3e5ebc7faab9632797b51f78c17 100644
+--- a/src/main/java/net/minecraft/world/item/NameTagItem.java
++++ b/src/main/java/net/minecraft/world/item/NameTagItem.java
+@@ -25,7 +25,22 @@ public class NameTagItem extends Item {
+                     ((Mob) newEntityLiving).setPersistenceRequired();
+                     // Paper end
+                 }
++                // Graphite start - Toby Cat
++                if (newEntityLiving instanceof net.minecraft.world.entity.animal.Cat cat && cat.isOwnedBy(user) && newEntityLiving.level().graphiteConfiguration().mobSettings.catOptions.allowTobyCat) {
++                    net.minecraft.network.chat.Component itemName = io.papermc.paper.adventure.PaperAdventure.asVanilla(net.kyori.adventure.text.Component.text("Toby"));
++                    if (stack.getHoverName().contains(itemName)) {
++                        ((org.bukkit.entity.Cat) cat.getBukkitEntity()).setCatType(org.bukkit.entity.Cat.Type.BLACK);
+ 
++                        net.minecraft.network.protocol.Packet<?> despawnPacket = new net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket(cat.getId());
++                        net.minecraft.network.protocol.Packet<?> spawnPacket = new net.minecraft.network.protocol.game.ClientboundAddEntityPacket(cat);
++
++                        for (net.minecraft.server.level.ServerPlayer serverPlayer : (java.util.List<net.minecraft.server.level.ServerPlayer>) cat.level().players()) {
++                            serverPlayer.connection.send(despawnPacket);
++                            serverPlayer.connection.send(spawnPacket);
++                        }
++                    }
++                }
++                // Graphite end - Toby Cat
+                 stack.shrink(1);
+             }
+ 
+diff --git a/src/main/java/org/graphitemc/graphite/configuration/LevelConfigurations.java b/src/main/java/org/graphitemc/graphite/configuration/LevelConfigurations.java
+index e54719544e5c66fa98ca60e92a4436b0e12b962a..f28ed2644e4e58955851ef928e56b5bb6a548e94 100644
+--- a/src/main/java/org/graphitemc/graphite/configuration/LevelConfigurations.java
++++ b/src/main/java/org/graphitemc/graphite/configuration/LevelConfigurations.java
+@@ -34,6 +34,14 @@ public class LevelConfigurations extends ConfigurationPart {
+ 
+         }
+ 
++        public CatOptions catOptions;
++
++        public class CatOptions extends ConfigurationPart {
++
++            public boolean allowTobyCat = true;
++
++        }
++
+     }
+ 
+     public Miscellaneous misc;
