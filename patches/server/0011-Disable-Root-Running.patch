@@ -1,0 +1,39 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrFishCakes <FinlayOxby@outlook.com>
+Date: Mon, 28 Aug 2023 20:24:45 +0100
+Subject: [PATCH] Disable Root Running
+
+Stop the server running as root user
+
+diff --git a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
+index a4690357bec1e88d5c3c1a0112c64f0f32fa25e3..531b069e7d7147e273a22a9f6dd81c0c10ad31a2 100644
+--- a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
++++ b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
+@@ -182,6 +182,15 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
+ 
+         // Paper start - detect running as root
+         if (io.papermc.paper.util.ServerEnvironment.userIsRootOrAdmin()) {
++            // Graphite start - Disable Running Root
++            if (org.graphitemc.graphite.configuration.GlobalConfiguration.get().serverOptions.serverSecurity.disableRootRunning) {
++                DedicatedServer.LOGGER.warn("****************************");
++                DedicatedServer.LOGGER.warn("YOU ARE RUNNING THIS SERVER AS AN ADMINISTRATIVE OR ROOT USER. THIS FEATURE IS DISABLED IN \"graphite-global.yml\".");
++                DedicatedServer.LOGGER.warn("THE SERVER WILL NOW BEGIN TO SHUTDOWN.");
++                DedicatedServer.LOGGER.warn("****************************");
++                return false;
++            }
++            // Graphite end - Disable Running Root
+             DedicatedServer.LOGGER.warn("****************************");
+             DedicatedServer.LOGGER.warn("YOU ARE RUNNING THIS SERVER AS AN ADMINISTRATIVE OR ROOT USER. THIS IS NOT ADVISED.");
+             DedicatedServer.LOGGER.warn("YOU ARE OPENING YOURSELF UP TO POTENTIAL RISKS WHEN DOING THIS.");
+diff --git a/src/main/java/org/graphitemc/graphite/configuration/GlobalConfiguration.java b/src/main/java/org/graphitemc/graphite/configuration/GlobalConfiguration.java
+index 3ca407a0aada4113c8d8bb9389217f3cf6ba3795..73a49e030c2c6f5e53502deffd58a7f481235aa2 100644
+--- a/src/main/java/org/graphitemc/graphite/configuration/GlobalConfiguration.java
++++ b/src/main/java/org/graphitemc/graphite/configuration/GlobalConfiguration.java
+@@ -36,6 +36,7 @@ public class GlobalConfiguration extends ConfigurationPart {
+         public class ServerSecurity {
+ 
+             public boolean disableChatReports = false;
++            public boolean disableRootRunning = true;
+ 
+         }
+     }
