@@ -59,7 +59,7 @@ index 824f31b68b38f2f8642fb9d59a123cfdaffbb7b2..c994f3e4ae2bb30ded8dafb98fc17636
  
      // CraftBukkit start
 diff --git a/src/main/java/org/graphitemc/graphite/configuration/GlobalConfiguration.java b/src/main/java/org/graphitemc/graphite/configuration/GlobalConfiguration.java
-index 26b73ff342b41efe20935bc2ee516fbef9221aff..3ca407a0aada4113c8d8bb9389217f3cf6ba3795 100644
+index 26b73ff342b41efe20935bc2ee516fbef9221aff..bd41b980749c5cb396ce9334877124c122387cde 100644
 --- a/src/main/java/org/graphitemc/graphite/configuration/GlobalConfiguration.java
 +++ b/src/main/java/org/graphitemc/graphite/configuration/GlobalConfiguration.java
 @@ -31,6 +31,13 @@ public class GlobalConfiguration extends ConfigurationPart {
@@ -68,7 +68,7 @@ index 26b73ff342b41efe20935bc2ee516fbef9221aff..3ca407a0aada4113c8d8bb9389217f3c
  
 +        public ServerSecurity serverSecurity;
 +
-+        public class ServerSecurity {
++        public class ServerSecurity extends ConfigurationPart {
 +
 +            public boolean disableChatReports = false;
 +

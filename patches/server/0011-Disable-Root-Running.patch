@@ -26,11 +26,11 @@ index a4690357bec1e88d5c3c1a0112c64f0f32fa25e3..531b069e7d7147e273a22a9f6dd81c0c
              DedicatedServer.LOGGER.warn("YOU ARE RUNNING THIS SERVER AS AN ADMINISTRATIVE OR ROOT USER. THIS IS NOT ADVISED.");
              DedicatedServer.LOGGER.warn("YOU ARE OPENING YOURSELF UP TO POTENTIAL RISKS WHEN DOING THIS.");
 diff --git a/src/main/java/org/graphitemc/graphite/configuration/GlobalConfiguration.java b/src/main/java/org/graphitemc/graphite/configuration/GlobalConfiguration.java
-index 3ca407a0aada4113c8d8bb9389217f3cf6ba3795..73a49e030c2c6f5e53502deffd58a7f481235aa2 100644
+index bd41b980749c5cb396ce9334877124c122387cde..6332ac1dc8d89f74bdab1015ce5b0d51797ac911 100644
 --- a/src/main/java/org/graphitemc/graphite/configuration/GlobalConfiguration.java
 +++ b/src/main/java/org/graphitemc/graphite/configuration/GlobalConfiguration.java
 @@ -36,6 +36,7 @@ public class GlobalConfiguration extends ConfigurationPart {
-         public class ServerSecurity {
+         public class ServerSecurity extends ConfigurationPart {
  
              public boolean disableChatReports = false;
 +            public boolean disableRootRunning = true;
