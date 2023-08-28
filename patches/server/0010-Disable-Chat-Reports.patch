@@ -1,0 +1,78 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrFishCakes <FinlayOxby@outlook.com>
+Date: Mon, 28 Aug 2023 19:51:21 +0100
+Subject: [PATCH] Disable Chat Reports
+
+
+diff --git a/src/main/java/net/minecraft/network/chat/OutgoingChatMessage.java b/src/main/java/net/minecraft/network/chat/OutgoingChatMessage.java
+index 74cf1c043beef03cfd5adf481414a5ee78bef2a6..a2f29a5d47285d422efba3a9be42799cf1173d5c 100644
+--- a/src/main/java/net/minecraft/network/chat/OutgoingChatMessage.java
++++ b/src/main/java/net/minecraft/network/chat/OutgoingChatMessage.java
+@@ -14,7 +14,12 @@ public interface OutgoingChatMessage {
+     // Paper end
+ 
+     static OutgoingChatMessage create(PlayerChatMessage message) {
+-        return (OutgoingChatMessage)(message.isSystem() ? new OutgoingChatMessage.Disguised(message.decoratedContent()) : new OutgoingChatMessage.Player(message));
++        // Graphite start - Disable Chat Reports
++        if (org.graphitemc.graphite.configuration.GlobalConfiguration.get().serverOptions.serverSecurity.disableChatReports)
++            return new OutgoingChatMessage.Disguised(message.decoratedContent());
++        else
++            return (OutgoingChatMessage)(message.isSystem() ? new OutgoingChatMessage.Disguised(message.decoratedContent()) : new OutgoingChatMessage.Player(message));
++        // Graphite end - Disable Chat Reports
+     }
+ 
+     public static record Disguised(Component content) implements OutgoingChatMessage {
+diff --git a/src/main/java/net/minecraft/server/level/ServerPlayer.java b/src/main/java/net/minecraft/server/level/ServerPlayer.java
+index 0249eeb3937cf48cea13846a7e39b248947e21a4..ab016ab4e3f94d9ef58c4a872ec6b4814e27675a 100644
+--- a/src/main/java/net/minecraft/server/level/ServerPlayer.java
++++ b/src/main/java/net/minecraft/server/level/ServerPlayer.java
+@@ -2156,7 +2156,12 @@ public class ServerPlayer extends Player {
+     }
+ 
+     public void sendServerStatus(ServerStatus metadata) {
+-        this.connection.send(new ClientboundServerDataPacket(metadata.description(), metadata.favicon().map(ServerStatus.Favicon::iconBytes), metadata.enforcesSecureChat()));
++        // Graphite start - Disable Chat Reports
++        if (org.graphitemc.graphite.configuration.GlobalConfiguration.get().serverOptions.serverSecurity.disableChatReports)
++            this.connection.send(new ClientboundServerDataPacket(metadata.description(), metadata.favicon().map(ServerStatus.Favicon::iconBytes), true));
++        else
++            this.connection.send(new ClientboundServerDataPacket(metadata.description(), metadata.favicon().map(ServerStatus.Favicon::iconBytes), metadata.enforcesSecureChat()));
++        // Graphite end - Disable Chat Reports
+     }
+ 
+     @Override
+diff --git a/src/main/java/net/minecraft/server/players/PlayerList.java b/src/main/java/net/minecraft/server/players/PlayerList.java
+index 824f31b68b38f2f8642fb9d59a123cfdaffbb7b2..c994f3e4ae2bb30ded8dafb98fc1763619f9ce6a 100644
+--- a/src/main/java/net/minecraft/server/players/PlayerList.java
++++ b/src/main/java/net/minecraft/server/players/PlayerList.java
+@@ -1479,7 +1479,12 @@ public abstract class PlayerList {
+     }
+ 
+     public boolean verifyChatTrusted(PlayerChatMessage message) { // Paper - private -> public
+-        return message.hasSignature() && !message.hasExpiredServer(Instant.now());
++        // Graphite start - Disable Chat Reports
++        if (org.graphitemc.graphite.configuration.GlobalConfiguration.get().serverOptions.serverSecurity.disableChatReports)
++            return true;
++        else
++            return message.hasSignature() && !message.hasExpiredServer(Instant.now());
++        // Graphite end - Disable Chat Reports
+     }
+ 
+     // CraftBukkit start
+diff --git a/src/main/java/org/graphitemc/graphite/configuration/GlobalConfiguration.java b/src/main/java/org/graphitemc/graphite/configuration/GlobalConfiguration.java
+index 26b73ff342b41efe20935bc2ee516fbef9221aff..3ca407a0aada4113c8d8bb9389217f3cf6ba3795 100644
+--- a/src/main/java/org/graphitemc/graphite/configuration/GlobalConfiguration.java
++++ b/src/main/java/org/graphitemc/graphite/configuration/GlobalConfiguration.java
+@@ -31,6 +31,13 @@ public class GlobalConfiguration extends ConfigurationPart {
+ 
+         }
+ 
++        public ServerSecurity serverSecurity;
++
++        public class ServerSecurity {
++
++            public boolean disableChatReports = false;
++
++        }
+     }
+ 
+     public Recipes recipes;
