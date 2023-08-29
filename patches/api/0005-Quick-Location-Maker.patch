@@ -1,0 +1,45 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrFishCakes <FinlayOxby@outlook.com>
+Date: Tue, 29 Aug 2023 23:21:19 +0100
+Subject: [PATCH] Quick Location Maker
+
+Adds a static accessor to create a location
+
+diff --git a/src/main/java/org/bukkit/Location.java b/src/main/java/org/bukkit/Location.java
+index 1bfe465b9aaeea7d3c871140145b7de1b8f1d93d..7cbe6129de9ca043e3fef1a075d4606e1a910b23 100644
+--- a/src/main/java/org/bukkit/Location.java
++++ b/src/main/java/org/bukkit/Location.java
+@@ -1200,4 +1200,33 @@ public class Location implements Cloneable, ConfigurationSerializable, io.paperm
+         return new Location(world, this.x(), this.y(), this.z(), this.getYaw(), this.getPitch());
+     }
+     // Paper end
++    // Graphite start - Quick Location Maker
++    /**
++     * Create a new instance of a {@link Location} via static accessor.
++     *
++     * @param world The world in which this location resides
++     * @param x The x-coordinate of this new location
++     * @param y The y-coordinate of this new location
++     * @param z The z-coordinate of this new location
++     * @param yaw The absolute rotation on the x-plane, in degrees
++     * @param pitch The absolute rotation on the y-plane, in degrees
++     * @return A new location
++     */
++    public static @NotNull Location of(@NotNull final World world, final double x, final double y, final double z, final float yaw, final float pitch) {
++        return new Location(world, x, y, z, yaw, pitch);
++    }
++
++    /**
++     * Create a new instance of a {@link Location} via static accessor.
++     *
++     * @param world The world in which this location resides
++     * @param x The x-coordinate of this new location
++     * @param y The y-coordinate of this new location
++     * @param z The z-coordinate of this new location
++     * @return A new location
++     */
++    public static @NotNull Location of(@NotNull final World world, final double x, final double y, final double z) {
++        return of(world, x, y, z, 0F, 0F);
++    }
++    // Graphite end - Quick Location Maker
+ }
