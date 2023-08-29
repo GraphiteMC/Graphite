@@ -154,10 +154,10 @@ index e471960e0443392f6f54732b052a4debf2a8fd97..19f1102de25054f2a8e7346c9ef78bc9
 +    // Graphite end
  }
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 99fd775e7a564aaef327a62bb7742da07b2d2829..3fae117993ed82ab59353852c8bdd952c19a6d28 100644
+index e6ddf69ade7ae51640569150f7db10d1afa63691..a36d407a10763c8ac3d57b194243e4fbdb2b273d 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -307,6 +307,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -306,6 +306,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
      public final double[] recentTps = new double[ 4 ]; // Purpur
      // Spigot end
      public final io.papermc.paper.configuration.PaperConfigurations paperConfigurations;
@@ -165,7 +165,7 @@ index 99fd775e7a564aaef327a62bb7742da07b2d2829..3fae117993ed82ab59353852c8bdd952
      public static long currentTickLong = 0L; // Paper
      public boolean lagging = false; // Purpur
      protected boolean upnp = false; // Purpur
-@@ -413,6 +414,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
+@@ -412,6 +413,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          // Paper end
          Runtime.getRuntime().addShutdownHook(new org.bukkit.craftbukkit.util.ServerShutdownThread(this));
          this.paperConfigurations = services.paperConfigurations(); // Paper
@@ -217,7 +217,7 @@ index a9b2c8cd4dcd3f884e4306bebee9334d3848fce5..2345699a770c091a3455ddbc022fc63e
      }
  
 diff --git a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
-index 12124d6fbc0406bb62bd95a0f7bab68afa43377c..d2b20a59fb35c985fe97288b1cbe1d8a6bfc92ba 100644
+index 2a70abb9e0af502885593df1e732887cd9d2ce4d..751eac0e8746c4c804ced32f42a2b6973c20bb6e 100644
 --- a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
 +++ b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
 @@ -209,6 +209,11 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface

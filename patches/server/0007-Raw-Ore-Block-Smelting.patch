@@ -6,10 +6,10 @@ Subject: [PATCH] Raw Ore Block Smelting
 One raw ore block will smelt into 9 ingots of the type. Can be toggeled per-world for each raw ore type
 
 diff --git a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
-index d2b20a59fb35c985fe97288b1cbe1d8a6bfc92ba..a4690357bec1e88d5c3c1a0112c64f0f32fa25e3 100644
+index 751eac0e8746c4c804ced32f42a2b6973c20bb6e..81f8c299c62efd9e0e5b6ec4da5eaf288b630d7f 100644
 --- a/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
 +++ b/src/main/java/net/minecraft/server/dedicated/DedicatedServer.java
-@@ -386,6 +386,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
+@@ -385,6 +385,7 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface
              if (gg.pufferfish.pufferfish.PufferfishConfig.enableAsyncMobSpawning) mobSpawnExecutor.start(); // Pufferfish
              org.purpurmc.purpur.task.BossBarTask.startAll(); // Purpur
              org.purpurmc.purpur.task.BeehiveTask.instance().register(); // Purpur
@@ -95,7 +95,7 @@ index 997d0fab71eacc6466ffe3bc8f6349e5813d6d49..a26c1556c7d5995c424f0719379b047e
 +    // Graphite end - Smelt Raw Ore Blocks
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index a5bd34d71a2097cd1541917d45ab34a70d09b4ca..b21cd4b8417bbb3f4edcf0a0e43ed8d3585e932e 100644
+index e63fa71d64996aeb7df361872eacdf3541706ae9..7f383d80c7eae09d630457f14bc02b6730ef085c 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -1103,6 +1103,7 @@ public final class CraftServer implements Server {
