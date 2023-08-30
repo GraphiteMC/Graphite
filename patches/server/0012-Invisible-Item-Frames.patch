@@ -1,0 +1,43 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrFishCakes <FinlayOxby@outlook.com>
+Date: Wed, 30 Aug 2023 23:16:52 +0100
+Subject: [PATCH] Invisible Item Frames
+
+Shift-right click an item frame with correct permission to make it invisible
+
+diff --git a/src/main/java/net/minecraft/world/entity/decoration/ItemFrame.java b/src/main/java/net/minecraft/world/entity/decoration/ItemFrame.java
+index 182faba889dc15a3500c5919cad8a5483a53033a..40adcdc9a894532387dccc503b1aafcb716d3146 100644
+--- a/src/main/java/net/minecraft/world/entity/decoration/ItemFrame.java
++++ b/src/main/java/net/minecraft/world/entity/decoration/ItemFrame.java
+@@ -555,4 +555,19 @@ public class ItemFrame extends HangingEntity {
+ 
+         return (float) Mth.wrapDegrees(180 + enumdirection.get2DDataValue() * 90 + this.getRotation() * 45 + i);
+     }
++    // Graphite start - Invisible Item Frames
++    @Override
++    public InteractionResult interactAt(Player player, Vec3 hitPos, InteractionHand hand) {
++        if (this.level().graphiteConfiguration().misc.invisibleItemFrames && player.isShiftKeyDown() &&
++                player.getBukkitEntity().hasPermission("graphite.itemframe.invisible." + this.level().getWorld().getName())) {
++            player.swing(InteractionHand.MAIN_HAND);
++            this.setInvisible(!isInvisible());
++            this.setRotation(getRotation() - 1); // Prevents item from being rotated
++
++            return InteractionResult.PASS;
++        }
++
++        return super.interactAt(player, hitPos, hand);
++    }
++    // Graphite end - Invisible Item Frames
+ }
+diff --git a/src/main/java/org/graphitemc/graphite/configuration/LevelConfigurations.java b/src/main/java/org/graphitemc/graphite/configuration/LevelConfigurations.java
+index f28ed2644e4e58955851ef928e56b5bb6a548e94..8304ad66e42985fd90dbeba2d4def9b42ce2895f 100644
+--- a/src/main/java/org/graphitemc/graphite/configuration/LevelConfigurations.java
++++ b/src/main/java/org/graphitemc/graphite/configuration/LevelConfigurations.java
+@@ -50,6 +50,7 @@ public class LevelConfigurations extends ConfigurationPart {
+ 
+         public boolean fixMC31819 = true;
+         public boolean fixMC93018 = true;
++        public boolean invisibleItemFrames = true;
+ 
+         public Recipes recipes;
+ 

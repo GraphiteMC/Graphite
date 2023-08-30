@@ -1,0 +1,66 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrFishCakes <FinlayOxby@outlook.com>
+Date: Wed, 30 Aug 2023 22:55:05 +0100
+Subject: [PATCH] Graphite Permissions
+
+
+diff --git a/src/main/java/org/bukkit/util/permissions/CommandPermissions.java b/src/main/java/org/bukkit/util/permissions/CommandPermissions.java
+index d5a42707d365ffd72532bbb1a59a1ca7145f9918..85d061a379cc9d29d47714d71586bd4a8c750a31 100644
+--- a/src/main/java/org/bukkit/util/permissions/CommandPermissions.java
++++ b/src/main/java/org/bukkit/util/permissions/CommandPermissions.java
+@@ -19,6 +19,7 @@ public final class CommandPermissions {
+         DefaultPermissions.registerPermission(PREFIX + "reload", "Allows the user to reload the server settings", PermissionDefault.OP, commands);
+         DefaultPermissions.registerPermission(PREFIX + "version", "Allows the user to view the version of the server", PermissionDefault.TRUE, commands);
+         DefaultPermissions.registerPermission(PREFIX + "purpur", "Allows the user to use the purpur command", PermissionDefault.OP, commands); // Purpur
++        DefaultPermissions.registerPermission(PREFIX + "graphite", "Allows the user to use the graphite command", PermissionDefault.OP, commands); // Graphite
+ 
+         commands.recalculatePermissibles();
+         return commands;
+diff --git a/src/main/java/org/bukkit/util/permissions/DefaultPermissions.java b/src/main/java/org/bukkit/util/permissions/DefaultPermissions.java
+index 10627d2a11251a8cb01bbc3f6242d66f3505a16e..9068b19c83b522c55d04c92b33bc4849d8d56ba8 100644
+--- a/src/main/java/org/bukkit/util/permissions/DefaultPermissions.java
++++ b/src/main/java/org/bukkit/util/permissions/DefaultPermissions.java
+@@ -90,6 +90,7 @@ public final class DefaultPermissions {
+         BroadcastPermissions.registerPermissions(parent);
+ 
+         PurpurPermissions.registerPermissions(); // Purpur
++        org.graphitemc.graphite.GraphitePermissions.registerPermissions(); // Graphite
+ 
+         parent.recalculatePermissibles();
+     }
+diff --git a/src/main/java/org/graphitemc/graphite/GraphitePermissions.java b/src/main/java/org/graphitemc/graphite/GraphitePermissions.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..b7083aeee29563d9bd2a0090f4bb4743c2291cd2
+--- /dev/null
++++ b/src/main/java/org/graphitemc/graphite/GraphitePermissions.java
+@@ -0,0 +1,30 @@
++package org.graphitemc.graphite;
++
++import org.bukkit.Bukkit;
++import org.bukkit.World;
++import org.bukkit.permissions.Permission;
++import org.bukkit.permissions.PermissionDefault;
++import org.jetbrains.annotations.NotNull;
++
++import static org.bukkit.util.permissions.DefaultPermissions.registerPermission;
++
++public final class GraphitePermissions {
++
++    private static final String ROOT = "graphite";
++    private static final String PREFIX = ROOT + ".";
++
++    @NotNull
++    public static Permission registerPermissions() {
++        final Permission graphite = registerPermission(ROOT, "Gives the user ability to use all Graphite utilities and commands", PermissionDefault.FALSE);
++
++        Permission itemFrame = registerPermission(PREFIX + "itemframe.invisible", "Allow changing of item frame invisibility in all levels", PermissionDefault.FALSE, graphite);
++        for (World world : Bukkit.getWorlds()) {
++            registerPermission(PREFIX + "itemframe.invisible." + world.getName(), "Allow changing of items frame invisibility in " + world.getName(), PermissionDefault.FALSE, itemFrame);
++        }
++        itemFrame.recalculatePermissibles();
++
++        graphite.recalculatePermissibles();
++        return graphite;
++    }
++
++}
