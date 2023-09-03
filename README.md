@@ -47,6 +47,10 @@ dependencies {
 ### Repository (dev-bundle)
 [For more on Paperweight](https://github.com/PaperMC/paperweight/).
 ```kotlin
+plugins {
+    id("io.papermc.paperweight.userdev") version "1.5.5"
+}
+
 repositories {
     maven("https://repo.graphitemc.org/releases")
 }
@@ -62,5 +66,5 @@ To compile Graphite you require JDK 17 and an internet connection.
 2. Run `./gradlew applyPatches` and when that completes run `./gradlew createReobfBundlerJar` in your terminal.
 3. Move the compiled jar found in `build/libs` to your server folder and run it.
 
-If you find the process is too slow, try using [WSL](https://learn.microsoft.com/en-us/windows/wsl/install) or Linux.
+If you find the process is too slow whilst compiling or applying patches, try using [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install) or Linux.
 ___
