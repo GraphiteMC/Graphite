@@ -30,7 +30,7 @@ index 10627d2a11251a8cb01bbc3f6242d66f3505a16e..9068b19c83b522c55d04c92b33bc4849
      }
 diff --git a/src/main/java/org/graphitemc/graphite/GraphitePermissions.java b/src/main/java/org/graphitemc/graphite/GraphitePermissions.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..b7083aeee29563d9bd2a0090f4bb4743c2291cd2
+index 0000000000000000000000000000000000000000..e05eea4ffebb5c81875e0a5ee0e9a370d2f13e36
 --- /dev/null
 +++ b/src/main/java/org/graphitemc/graphite/GraphitePermissions.java
 @@ -0,0 +1,30 @@
