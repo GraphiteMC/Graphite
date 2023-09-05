@@ -1,0 +1,43 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrFishCakes <FinlayOxby@outlook.com>
+Date: Tue, 5 Sep 2023 20:25:57 +0100
+Subject: [PATCH] Get Random Player
+
+Adds a method to fetch a random online player
+
+diff --git a/src/main/java/org/bukkit/Bukkit.java b/src/main/java/org/bukkit/Bukkit.java
+index 584e3b08935f43beb27f478cc72229b6a5f40689..a8bf2a9d41d00d1ed34e5652e3106b95eb094c3e 100644
+--- a/src/main/java/org/bukkit/Bukkit.java
++++ b/src/main/java/org/bukkit/Bukkit.java
+@@ -2879,4 +2879,14 @@ public final class Bukkit {
+         server.clearBlockHighlights();
+     }
+     // Purpur end
++    // Graphite start - Get Random Player
++    /**
++     * Get a random player on the server
++     *
++     * @return A random online player or null if nobody is online
++     */
++    public static @Nullable Player getRandomPlayer() {
++        return server.getRandomPlayer();
++    }
++    // Graphite end - Get Random Player
+ }
+diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
+index c9fc7b84c9bc03caa01a5ce22d785f766c2022ba..71ee3725c621aab6b7fb623d37292bd1ac458e59 100644
+--- a/src/main/java/org/bukkit/Server.java
++++ b/src/main/java/org/bukkit/Server.java
+@@ -2522,4 +2522,12 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
+      */
+     void clearBlockHighlights();
+     // Purpur end
++    // Graphite start - Get Random Player
++    /**
++     * Get a random player on the server
++     *
++     * @return A random online player or null if nobody is online
++     */
++    @Nullable Player getRandomPlayer();
++    // Graphite end - Get Random Player
+ }

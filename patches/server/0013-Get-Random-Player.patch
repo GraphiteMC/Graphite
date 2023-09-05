@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrFishCakes <FinlayOxby@outlook.com>
+Date: Tue, 5 Sep 2023 20:26:50 +0100
+Subject: [PATCH] Get Random Player
+
+Adds a method to fetch a random online player
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index 7f383d80c7eae09d630457f14bc02b6730ef085c..4946599a03a0aca24fb29a157fac70faa10a7a83 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -3248,4 +3248,11 @@ public final class CraftServer implements Server {
+         return getServer().lagging;
+     }
+     // Purpur end
++    // Graphite start - Get Random Player
++    public Player getRandomPlayer() {
++        if (getOnlinePlayers().isEmpty()) return null;
++
++        return getOnlinePlayers().get(new java.util.Random().nextInt(getOnlinePlayers().size()));
++    }
++    // Graphite end - Get Random Player
+ }
