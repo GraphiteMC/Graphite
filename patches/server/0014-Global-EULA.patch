@@ -1,0 +1,58 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MrFishCakes <FinlayOxby@outlook.com>
+Date: Wed, 6 Sep 2023 21:00:48 +0100
+Subject: [PATCH] Global EULA
+
+Allows server owners to user a single global EULA file
+
+diff --git a/src/main/java/net/minecraft/server/Main.java b/src/main/java/net/minecraft/server/Main.java
+index dae36c6452ccd57a436dd918547b64d59957ab0a..3013ddf8e2ddb06abd08a36d80a3894f424b4c4a 100644
+--- a/src/main/java/net/minecraft/server/Main.java
++++ b/src/main/java/net/minecraft/server/Main.java
+@@ -131,7 +131,7 @@ public class Main {
+             DedicatedServerSettings dedicatedserversettings = new DedicatedServerSettings(optionset); // CraftBukkit - CLI argument support
+ 
+             dedicatedserversettings.forceSave();
+-            Path path2 = Paths.get("eula.txt");
++            Path path2 = Paths.get(dedicatedserversettings.getProperties().useGlobalEula ? dedicatedserversettings.getProperties().globalEulaPath : "eula.txt"); // Graphite - Global EULA
+             Eula eula = new Eula(path2);
+             // Paper start - load config files for access below if needed
+             org.bukkit.configuration.file.YamlConfiguration bukkitConfiguration = io.papermc.paper.configuration.PaperConfigurations.loadLegacyConfigFile((File) optionset.valueOf("bukkit-settings"));
+diff --git a/src/main/java/net/minecraft/server/dedicated/DedicatedServerProperties.java b/src/main/java/net/minecraft/server/dedicated/DedicatedServerProperties.java
+index 1ea3012995c738c67b31e997c138f824f9e69ba1..45be14d14fa8f35405d0074d587d98b1fa39f2ee 100644
+--- a/src/main/java/net/minecraft/server/dedicated/DedicatedServerProperties.java
++++ b/src/main/java/net/minecraft/server/dedicated/DedicatedServerProperties.java
+@@ -110,6 +110,10 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
+     public final WorldOptions worldOptions;
+ 
+     public final String rconIp; // Paper - Add rcon ip
++    // Graphite start - Global EULA
++    public final boolean useGlobalEula;
++    public final String globalEulaPath;
++    // Graphite end - Global EULA
+ 
+     // CraftBukkit start
+     public DedicatedServerProperties(Properties properties, OptionSet optionset) {
+@@ -172,6 +176,22 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
+         final String rconIp = this.getStringRaw("rcon.ip");
+         this.rconIp = rconIp == null ? this.serverIp : rconIp;
+         // Paper end
++        // Graphite start - Global EULA
++        boolean useGlobalEula = get("use-global-eula", false);
++        String globalEulaPath = get("global-eula-path", "");
++        if (useGlobalEula) {
++            try {
++                globalEulaPath = get("global-eula-path", Path.of(new java.net.URI("file://" + System.getProperty("user.home") + java.io.File.separator + "GlobalEula.txt")).toString());
++            } catch (java.net.URISyntaxException ex) {
++                LOGGER.warn("Bad global eula path", ex);
++                useGlobalEula = false;
++                globalEulaPath = "";
++            }
++        }
++
++        this.useGlobalEula = useGlobalEula;
++        this.globalEulaPath = globalEulaPath;
++        // Graphite end - Global EULA
+     }
+ 
+     // CraftBukkit start
