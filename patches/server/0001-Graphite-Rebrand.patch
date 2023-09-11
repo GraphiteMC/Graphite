@@ -123,10 +123,10 @@ index b5b6657e52e4f7a630229bd3ba433438af293e22..75a47c253ba2adcc19d91a5f990ff876
  
      public String getTitle() {
 diff --git a/src/main/java/net/minecraft/world/level/Level.java b/src/main/java/net/minecraft/world/level/Level.java
-index bdb32964524cb2a4398b8d3bedfb03b0cb805b6d..8f770b6d252f2ef6e8dc63c0093012978de565dc 100644
+index 80ab17142c34d576409e5fb353ff31db9673b2c0..41b1abbd8a395f16ad20a425640b33ae27e07a83 100644
 --- a/src/main/java/net/minecraft/world/level/Level.java
 +++ b/src/main/java/net/minecraft/world/level/Level.java
-@@ -1035,7 +1035,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
+@@ -1034,7 +1034,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
              TickingBlockEntity tickingblockentity = (TickingBlockEntity) this.blockEntityTickers.get(tileTickPosition);
              // Spigot start
              if (tickingblockentity == null) {
@@ -162,7 +162,7 @@ index 99597258e8e88cd9e2c901c4ac3ff7faeeabee2b..65dc12643d7533cbfa4813ce38baf353
  
          if (stream != null) {
 diff --git a/src/main/java/org/purpurmc/purpur/PurpurConfig.java b/src/main/java/org/purpurmc/purpur/PurpurConfig.java
-index 3029f38cff6755b31427efb7fae3b6886ee8e4ee..2ce85ffaa3533c0e37a41c8a35cb0c7d1e055ccf 100644
+index 3633574e112f217b412217dd243a631dc4e9c40c..6c952d04ebcc08afc933475661c673d975a43862 100644
 --- a/src/main/java/org/purpurmc/purpur/PurpurConfig.java
 +++ b/src/main/java/org/purpurmc/purpur/PurpurConfig.java
 @@ -231,7 +231,7 @@ public class PurpurConfig {

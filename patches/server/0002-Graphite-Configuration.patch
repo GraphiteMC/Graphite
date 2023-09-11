@@ -262,7 +262,7 @@ index 221d1d0e1b4b46de6ebca5faac09bbda875fae17..c6b9451b60f117ef6d6cb5f63d9d5b57
          this.convertable = convertable_conversionsession;
          this.uuid = WorldUUID.getUUID(convertable_conversionsession.levelDirectory.path().toFile());
 diff --git a/src/main/java/net/minecraft/world/level/Level.java b/src/main/java/net/minecraft/world/level/Level.java
-index 8f770b6d252f2ef6e8dc63c0093012978de565dc..b1a32fbfc51e4daa1ea36a4482c42ceb7617b418 100644
+index 41b1abbd8a395f16ad20a425640b33ae27e07a83..b2b2382162f03d35e6319fc0cb80d205fb754a51 100644
 --- a/src/main/java/net/minecraft/world/level/Level.java
 +++ b/src/main/java/net/minecraft/world/level/Level.java
 @@ -328,9 +328,10 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
@@ -277,7 +277,7 @@ index 8f770b6d252f2ef6e8dc63c0093012978de565dc..b1a32fbfc51e4daa1ea36a4482c42ceb
          this.purpurConfig = new org.purpurmc.purpur.PurpurWorldConfig(((net.minecraft.world.level.storage.PrimaryLevelData) worlddatamutable).getLevelName(), env); // Purpur
          this.playerBreedingCooldowns = this.getNewBreedingCooldownCache(); // Purpur
          this.generator = gen;
-@@ -1630,4 +1631,11 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
+@@ -1629,4 +1630,11 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
          return getWorld().getEnvironment() == org.bukkit.World.Environment.THE_END;
      }
      // Purpur end
