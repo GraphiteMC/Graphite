@@ -95,10 +95,10 @@ index 997d0fab71eacc6466ffe3bc8f6349e5813d6d49..a26c1556c7d5995c424f0719379b047e
 +    // Graphite end - Smelt Raw Ore Blocks
  }
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index e63fa71d64996aeb7df361872eacdf3541706ae9..7f383d80c7eae09d630457f14bc02b6730ef085c 100644
+index b61c2d513ea472ecb46a66a81e019734c38f03ef..dcae9fa8f318c5e85ce175106b07812a25636430 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-@@ -1103,6 +1103,7 @@ public final class CraftServer implements Server {
+@@ -1081,6 +1081,7 @@ public final class CraftServer implements Server {
          org.spigotmc.SpigotConfig.registerCommands(); // Spigot
          io.papermc.paper.command.PaperCommands.registerCommands(this.console); // Paper
          org.graphitemc.graphite.command.GraphiteCommands.registerCommands(this.console); // Graphite

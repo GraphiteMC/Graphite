@@ -6,10 +6,10 @@ Subject: [PATCH] Global EULA
 Allows server owners to user a single global EULA file
 
 diff --git a/src/main/java/net/minecraft/server/Main.java b/src/main/java/net/minecraft/server/Main.java
-index dae36c6452ccd57a436dd918547b64d59957ab0a..8b6581b9d51479f082d2e80bd9141ba386e6c966 100644
+index f8d1631b274751a60d429f847ca7689e17adf1a2..12631a7174fdb9b8792caf0fb76cbbae2553ba7a 100644
 --- a/src/main/java/net/minecraft/server/Main.java
 +++ b/src/main/java/net/minecraft/server/Main.java
-@@ -131,7 +131,7 @@ public class Main {
+@@ -142,7 +142,7 @@ public class Main {
              DedicatedServerSettings dedicatedserversettings = new DedicatedServerSettings(optionset); // CraftBukkit - CLI argument support
  
              dedicatedserversettings.forceSave();
@@ -18,7 +18,7 @@ index dae36c6452ccd57a436dd918547b64d59957ab0a..8b6581b9d51479f082d2e80bd9141ba3
              Eula eula = new Eula(path2);
              // Paper start - load config files for access below if needed
              org.bukkit.configuration.file.YamlConfiguration bukkitConfiguration = io.papermc.paper.configuration.PaperConfigurations.loadLegacyConfigFile((File) optionset.valueOf("bukkit-settings"));
-@@ -169,7 +169,15 @@ public class Main {
+@@ -180,7 +180,15 @@ public class Main {
                  Main.LOGGER.info("You need to agree to the EULA in order to run the server. Go to eula.txt for more info.");
                  return;
              }
