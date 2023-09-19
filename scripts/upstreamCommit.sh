@@ -2,8 +2,8 @@
 
 # requires curl & jq
 
-# upstreamCommit <baseHash>
-# param: bashHash - the commit hash to use for comparing commits (baseHash...HEAD)
+# No parameters are needed with this adaptation as we simply
+# fetch the old commit from the properties file
 
 (
 set -e
